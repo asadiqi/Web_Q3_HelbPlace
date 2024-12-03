@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.utils import timezone
 
 class Canva(models.Model):
     title = models.CharField(max_length=100)
@@ -30,12 +31,11 @@ class Canva(models.Model):
 class JoinedCanva(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     canva = models.ForeignKey(Canva, on_delete=models.CASCADE)
+    last_modified = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        unique_together = ('user', 'canva')  # Un utilisateur ne peut rejoindre un Canva qu'une seule fois
-  
-    
-    
+        unique_together = ('user', 'canva')  # Un utilisateur ne peut rejoindre un Canva qu’une seule fois
+
     
 class Pixel(models.Model):
     canva = models.ForeignKey(Canva, on_delete=models.CASCADE, related_name='pixels')

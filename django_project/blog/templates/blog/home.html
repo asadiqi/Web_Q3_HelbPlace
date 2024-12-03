@@ -14,8 +14,16 @@
           <p class="text-center text-muted">
             {{ canva.sizeHeight }} x {{ canva.sizeWidth }} pixels
           </p>
+          <p class="text-center text-muted">
+            Waiting Time: {{ canva.timer }} sec
+          </p>
+
           <div class="d-flex justify-content-center">
-            <a href="{% url 'canva-detail' canva.id %}" class="btn btn-primary btn-sm">Rejoindre</a>
+            {% if user.is_authenticated %}
+              <a href="{% url 'canva-detail' canva.id %}" class="btn btn-primary btn-sm">Join</a>
+            {% else %}
+              <button class="btn btn-primary btn-sm" disabled>Join</button>
+            {% endif %}
           </div>
         </div>
       </div>

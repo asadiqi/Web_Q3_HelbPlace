@@ -10,14 +10,14 @@ from django.urls import reverse_lazy
 
 
 def home(request):
-    context = {'canvases': Canva.objects.all()}
+    context = {'canvases': Canva.objects.all().order_by('-save_count')}
     return render(request, 'blog/home.html', context)
 
 class CanvaListView(ListView):
     model = Canva
     template_name = 'blog/home.html'
     context_object_name = 'canvases'
-    ordering = ['-date_posted']
+    ordering = ['-save_count']
 
 class CanvaDetailView(DetailView):
     model = Canva
@@ -41,7 +41,13 @@ def update_pixel(request, pk):
         pixel = get_object_or_404(Pixel, canva=canva, x=x, y=y)
         pixel.color = color
         pixel.save()
+
+        # Incrémentation du compteur save_count
+        canva.save_count += 1
+        canva.save()
+
         return HttpResponseRedirect(reverse('canva-detail', args=[pk]))
+
 
 class CanvaCreateView(LoginRequiredMixin, CreateView):
     model = Canva

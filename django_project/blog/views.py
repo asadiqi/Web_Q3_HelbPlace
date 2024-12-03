@@ -57,29 +57,39 @@ def join_canva(request, pk):
             # Ajoute l'utilisateur à la liste des utilisateurs ayant rejoint
             canva.joined_users.add(request.user)
 
+            # Crée une relation JoinedCanva si elle n'existe pas
+            JoinedCanva.objects.get_or_create(user=request.user, canva=canva)
+
         # Redirige vers la page du Canva
         return redirect('canva-detail', pk=pk)
+
     return redirect('blog-home')  # Redirige vers la page d'accueil si non authentifié ou GET
-
-
 
 
 @login_required
 def update_pixel(request, pk):
     canva = get_object_or_404(Canva, pk=pk)
-    user_canva = JoinedCanva.objects.get(user=request.user, canva=canva)
-    
-    # Vérifier si l'utilisateur a respecté son temps de délai
-    if user_canva.last_modified:
-        time_since_last_change = timezone.now() - user_canva.last_modified
-        if time_since_last_change.total_seconds() < canva.timer:
-            remaining_time = canva.timer - time_since_last_change.total_seconds()
-            # Afficher un pop-up avec le temps restant
-            return JsonResponse({
-                'message': f"Vous devez attendre encore {remaining_time:.0f} secondes avant de modifier.",
-                'remaining_time': remaining_time
-            })
-    
+
+    # Vérifier si l'utilisateur est le créateur du canva
+    if request.user == canva.author:
+        user_canva = None
+    else:
+        # Tenter de récupérer l'objet JoinedCanva pour les autres utilisateurs
+        try:
+            user_canva = JoinedCanva.objects.get(user=request.user, canva=canva)
+        except JoinedCanva.DoesNotExist:
+            return JsonResponse({'message': "Vous n'avez pas rejoint ce Canva."}, status=403)
+
+        # Vérifier le délai de modification
+        if user_canva.last_modified:
+            time_since_last_change = timezone.now() - user_canva.last_modified
+            if time_since_last_change.total_seconds() < canva.timer:
+                remaining_time = canva.timer - time_since_last_change.total_seconds()
+                return JsonResponse({
+                    'message': f"Vous devez attendre encore {remaining_time:.0f} secondes avant de modifier.",
+                    'remaining_time': remaining_time
+                })
+
     if request.method == "POST":
         x = int(request.POST.get('x'))
         y = int(request.POST.get('y'))
@@ -87,19 +97,17 @@ def update_pixel(request, pk):
 
         # Vérifier si le pixel existe et appartient au Canva
         pixel = get_object_or_404(Pixel, canva=canva, x=x, y=y)
-        
+
         # Mettre à jour la couleur
         pixel.color = color
         pixel.save()
 
-        # Mettre à jour le temps de modification de l'utilisateur
-        user_canva.last_modified = timezone.now()
-        user_canva.save()
+        # Mettre à jour le temps de modification pour les utilisateurs normaux
+        if user_canva:
+            user_canva.last_modified = timezone.now()
+            user_canva.save()
 
-        # Rediriger vers la page du Canva
         return HttpResponseRedirect(reverse('canva-detail', args=[pk]))
-
-
 
 
 

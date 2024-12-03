@@ -99,7 +99,7 @@ def update_pixel(request, pk):
         pixel = get_object_or_404(Pixel, canva=canva, x=x, y=y)
 
         # Mettre à jour la couleur
-        pixel.color = color
+        pixel.color = color #
         pixel.save()
 
         # Mettre à jour le temps de modification pour les utilisateurs normaux

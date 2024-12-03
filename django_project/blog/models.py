@@ -1,16 +1,54 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
-from django.urls import reverse # Importing the reverse function from django.urls module for creating URL patterns dynamically from django 
+from django.urls import reverse
 
-class Post(models.Model): # Creating a model for our blog posts
-    title = models.CharField(max_length=100) # The title of the post
-    content = models.TextField() # The content of the post
-    date_posted = models.DateTimeField(default=timezone.now) # The date and time when the post was created..
-    author = models.ForeignKey(User,on_delete=models.CASCADE)# The author of the post and if a user is deleted, all their posts will also be deleted
+class Canva(models.Model): 
+    title = models.CharField(max_length=100)
+    sizeHeight = models.IntegerField()  
+    sizeWidth = models.IntegerField()
+    timer = models.IntegerField()
+    date_posted = models.DateTimeField(default=timezone.now)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.pixels.exists():
+            for x in range(self.sizeWidth):
+                for y in range(self.sizeHeight):
+                    Pixel.objects.create(canva=self, x=x, y=y)
+
+    def __str__(self):
+        return self.title
     
-    def __str__(self): # The string representation of the object when it's printed in shell or in the admin panel
-        return self.title # Returning the title of the post
     
-    def get_absolute_url(self): # Creating a URL pattern for each post
-        return reverse('post-detail', kwargs={'pk': self.pk}) # Returning the URL pattern with the post's primary key as a keyword argument
+    #content = "000000;010101;000000;000000"
+    
+    
+class Pixel(models.Model):
+    canva = models.ForeignKey(Canva, on_delete=models.CASCADE, related_name='pixels')
+    x = models.IntegerField()  # Position X
+    y = models.IntegerField()  # Position Y
+    color = models.CharField(max_length=7, default='#FFFFFF')  # Couleur hexadécimale
+     
+    class Meta:
+        unique_together = ('canva', 'x', 'y')  # Garantir que chaque pixel a des coordonnées uniques pour chaque canva
+
+# models.py
+def save(self, *args, **kwargs):
+    super().save(*args, **kwargs)  # Sauvegarde la toile
+    if not self.pixels.exists():  # Si les pixels n'ont pas encore été générés
+        for x in range(self.sizeWidth):
+            for y in range(self.sizeHeight):
+                Pixel.objects.create(canva=self, x=x, y=y)
+
+    def __str__(self):
+        return f"Pixel ({self.x}, {self.y}) on {self.canva.title}"
+   
+    
+    
+    
+    def __str__(self):
+        return self.title
+    
+    def get_absolute_url(self):
+        return reverse('canva-detail', kwargs={'pk': self.pk})

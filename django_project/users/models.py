@@ -12,12 +12,12 @@ class Profile(models.Model):
         return f'{self.user.username} Profile' # string representation of the profile object
     
     
-    def save(self):
-        super().save() # call the save method of the parent class (models.Model)
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # Appeler la méthode save de la classe parente
         
-        img = Image.open(self.image.path) # open the current image 
+        img = Image.open(self.image.path)  # Ouvrir l'image actuelle
         
-        if img.height > 300 or img.width > 300: # if the  image dimensions are greater than 300
-            output_size = (300, 300) # resize the image to 300x300
-            img.thumbnail(output_size) # resize the image
-            img.save(self.image.path) # save the resized image to the same location as the original image
+        if img.height > 300 or img.width > 300:  # Vérifier les dimensions de l'image
+            output_size = (300, 300)
+            img.thumbnail(output_size)  # Redimensionner l'image
+            img.save(self.image.path)  # Sauvegarder l'image redimensionnée

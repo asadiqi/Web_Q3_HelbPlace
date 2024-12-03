@@ -1,20 +1,17 @@
-{%  extends "blog/base.html" %}
-
+{% extends "blog/base.html" %}
 
 {% block content %}
-    {% for post in posts %} <!--using for loop with posts dictionbary  --> 
+    {% for canva in canvases %} <!--using for loop with canvases dictionary-->
         <article class="media content-section">
-            <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}"> <!--for user profile picture  --> 
+            <img class="rounded-circle article-img" src="{{ canva.author.profile.image.url }}"> <!--for user profile picture-->
             <div class="media-body">
-            <div class="article-metadata">
-                <a class="mr-2" href="#">{{ post.author }}</a>
-                <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
-            </div>
-            <h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>  <!--we creat a link page for psot with url 'post-detail and id is pk or primary key  --> 
-            <p class="article-content">{{ post.content }}</p>
+                <div class="article-metadata">
+                    <a class="mr-2" href="#">{{ canva.author }}</a>
+                    <small class="text-muted">{{ canva.date_posted|date:"F d, Y" }}</small>
+                </div>
+                <h2><a class="article-title" href="{% url 'canva-detail' canva.id %}">{{ canva.title }}</a></h2>  <!--we create a link page for canva with url 'canva-detail' and id is pk or primary key-->
+                <p class="article-content">{{ canva.content }}</p>
             </div>
         </article>
-    
     {% endfor %}
-{% endblock content %}    
-
+{% endblock content %}

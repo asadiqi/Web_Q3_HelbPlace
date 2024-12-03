@@ -11,6 +11,11 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.utils import timezone
 from django.http import JsonResponse
+from django.shortcuts import render
+from .models import Canva  # Assure-toi d'importer ton modèle Canva
+
+from django.http import JsonResponse
+from .models import Canva
 
 def home(request):
     context = {
@@ -149,3 +154,25 @@ class CanvaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 def statistic(request):
     return render(request, 'blog/statistic.html', {'title': 'statistic'})
+
+
+def canva_details_json(request, canva_id):
+    canva = Canva.objects.get(id=canva_id)
+    data = {
+        'message': f"Vous devez attendre encore {canva.timer} secondes avant de modifier.",
+        'remaining_time': canva.timer  # Utilise la valeur du timer du modèle
+    }
+    return JsonResponse(data)
+
+
+def canva_details(request, canva_id):
+    try:
+        canva = Canva.objects.get(id=canva_id)
+        data = {
+            "id": canva.id,
+            "name": canva.name,
+            "timer": canva.timer,
+        }
+        return JsonResponse(data)
+    except Canva.DoesNotExist:
+        return JsonResponse({"error": "Canva not found"}, status=404)

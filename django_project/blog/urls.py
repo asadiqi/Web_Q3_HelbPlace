@@ -5,8 +5,9 @@ from .views import (
     CanvaCreateView,
     CanvaUpdateView,
     CanvaDeleteView,
-    join_canva
+    join_canva,
 )
+
 from . import views
 
 urlpatterns = [
@@ -18,6 +19,6 @@ urlpatterns = [
     path('statistic/', views.statistic, name='blog-statistic'),
     path('canva/<int:pk>/join/', join_canva, name='join-canva'),
     path('canva/<int:pk>/update-pixel/', views.update_pixel, name='update-pixel'),
-
-
+    path('canva/<int:canva_id>/details/', views.canva_details, name='canva-details'),
+    path('canva/<int:canva_id>/json/', views.canva_details_json, name='canva-details-json'),  # L'endpoint JSON
 ]

@@ -1,5 +1,4 @@
 {% extends "blog/base.html" %}
-
 {% block content %}
 <article class="media content-section">
     <img class="rounded-circle article-img" src="{{ object.author.profile.image.url }}">
@@ -10,192 +9,50 @@
             {% if object.author == user %}
             <div>
                 <a class="btn-secondary btn-sm mt-1 mb-1" href="{% url 'canva-update' object.id %}">Update</a> |
-                <a class="btn-danger btn-sm mt-1 mb-1" href="{% url 'canva-delete' object.id %}">Delete</a> |
+                <a class="btn-danger btn-sm mt-1 mb-1" href="{% url 'canva-delete' object.id %}">Delete</a>
             </div>
             {% endif %}
         </div>
         <h2 class="article-title">{{ object.title }}</h2>
         <p class="article-content">Height: {{ object.sizeHeight }}px</p>
         <p class="article-content">Width: {{ object.sizeWidth }}px</p>
-        <p class="article-content">Timer: {{ object.timer }} sec</p>
+        <p class="article-content">Timer: {{ object.timer }}sec</p>
     </div>
 </article>
 
-{% if is_author %}
-    <p class="text-info">Vous êtes le créateur de ce Canva.</p>
-{% elif not joined %}
-    <form method="POST" action="{% url 'join-canva' object.id %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Rejoindre</button>
-    </form>
-{% else %}
-    <p class="text-success">Vous avez déjà rejoint ce Canva.</p>
-{% endif %}
-
-<!-- Grille des pixels -->
-{% if is_author or joined %}
-    <div class="canvas-grid">
-        {% for row in pixels %}
-            <div class="pixel-row">
-                {% for pixel in row %}
-                    <div 
-                        class="pixel" 
-                        style="background-color: {{ pixel.color }};"
-                        data-x="{{ pixel.x }}"
-                        data-y="{{ pixel.y }}">
-                    </div>
-                {% empty %}
-                    <p>No pixels available.</p>
-                {% endfor %}
-            </div>
-        {% endfor %}
-    </div>
-
-    <!-- Formulaire pour modifier une cellule -->
-    <div class="modify-grid">
-        <form method="POST" action="{% url 'update-pixel' object.id %}" id="pixelForm">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="x">Colonne:</label>
-                <input type="number" id="x" name="x" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="y">Ligne:</label>
-                <input type="number" id="y" name="y" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="color">Couleur (Hex):</label>
-                <input type="color" id="color" name="color" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-success mt-3" id="submitButton">Save</button>
-        </form>
-    </div>
-{% else %}
-    <p class="text-warning">Rejoignez ce Canva pour voir et modifier la grille.</p>
-{% endif %}
-
-<!-- Modal Popup -->
-<div id="myModal" class="modal">
-    <div class="modal-content">
-        <p id="timer">Vous devez attendre {{ object.timer }}s avant de changer un autre pixel</p>
-    </div>
+<div class="canvas-grid">
+    {% for row in pixels %}
+        <div class="pixel-row">
+            {% for pixel in row %}
+                <div 
+                    class="pixel" 
+                    style="background-color: {{ pixel.color }};"
+                    data-x="{{ pixel.x }}"
+                    data-y="{{ pixel.y }}">
+                </div>
+            {% empty %}
+                <p>No pixels available.</p>
+            {% endfor %}
+        </div>
+    {% endfor %}
 </div>
 
-<script>
-// Références aux éléments du DOM
-const modal = document.getElementById('myModal');
-const timerElement = document.getElementById('timer');
-const pixelForm = document.getElementById('pixelForm');
-const submitButton = document.getElementById('submitButton');
-const xInput = document.getElementById('x');
-const yInput = document.getElementById('y');
-const colorInput = document.getElementById('color');
-
-// Récupérer le timer initial depuis le modèle Django
-let remainingTime = {{ object.timer|default:0 }};
-let isTimerActive = false; // Indicateur de l'état du timer
-
-// Fonction pour afficher le modal et démarrer le timer
-function showModalAndStartTimer() {
-    modal.style.display = 'block'; // Affiche le modal
-    isTimerActive = true; // Le timer est actif
-    submitButton.disabled = true; // Désactive le bouton de soumission
-    xInput.disabled = true; // Désactive le champ colonne
-    yInput.disabled = true; // Désactive le champ ligne
-    colorInput.disabled = true; // Désactive le champ couleur
-
-    const interval = setInterval(() => {
-        remainingTime--;  // Décrémenter le temps restant
-        timerElement.textContent = `Vous devez attendre ${remainingTime}s avant de changer un autre pixel`; // Mettre à jour le texte du timer
-
-        if (remainingTime <= 0) {
-            clearInterval(interval); // Arrête le timer
-            modal.style.display = 'none'; // Cache le modal après expiration
-            isTimerActive = false; // Le timer n'est plus actif
-            submitButton.disabled = false; // Réactive le bouton de soumission
-            xInput.disabled = false; // Réactive le champ colonne
-            yInput.disabled = false; // Réactive le champ ligne
-            colorInput.disabled = false; // Réactive le champ couleur
-        }
-    }, 1000); // Répète toutes les secondes
-}
-
-// Lier l'événement de soumission du formulaire à l'affichage du modal
-pixelForm.addEventListener('submit', function (event) {
-    if (isTimerActive) {
-        event.preventDefault(); // Empêche l'envoi du formulaire tant que le timer est actif
-        alert("Veuillez attendre la fin du timer pour modifier un autre pixel.");
-        return; // Ne pas soumettre le formulaire
-    }
-
-    event.preventDefault();  // Empêche le comportement par défaut (soumission du formulaire)
-
-    // Change la couleur du pixel immédiatement
-    const x = document.getElementById('x').value;
-    const y = document.getElementById('y').value;
-    const color = document.getElementById('color').value;
-    
-    const pixel = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
-    if (pixel) {
-        pixel.style.backgroundColor = color;  // Mise à jour instantanée du pixel
-    }
-
-    // Affiche le modal et démarre le timer après la modification
-    showModalAndStartTimer();
-
-    // Soumettre le formulaire après avoir affiché le modal
-    setTimeout(() => {
-        this.submit();
-    }, remainingTime * 1000); // Attendre jusqu'à la fin du timer avant de soumettre le formulaire
-});
-</script>
-
-<style>
-/* Modal style */
-#myModal {
-    display: none; /* Caché par défaut */
-    position: fixed;
-    top: 50%; /* Positionné verticalement au milieu */
-    left: 80%; /* Positionné à droite de la fenêtre */
-    transform: translate(-50%, -50%); /* Centrer le modal */
-    width: 250px; /* Largeur du modal */
-    height: 250px; /* Hauteur du modal */
-    background-color: bisque;
-    border-radius: 15px; /* Bordures arrondies */
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Ombre douce */
-    z-index: 1000; /* Pour s'assurer que le modal reste au-dessus */
-    transition: opacity 0.3s ease; /* Animation d'affichage */
-}
-
-.modal-content {
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    color: Black;
-}
-
-#timer {
-    color: #d9534f; /* Couleur d'avertissement */
-    font-size: 20px;
-}
-
-/* Animation d'apparition */
-#myModal.show {
-    opacity: 1;
-}
-
-/* Style de fond derrière le modal */
-#myModal:before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.3); /* Fond semi-transparent */
-    z-index: -1;
-}
-</style>
-
+<div class="modify-grid">
+    <form method="POST" action="{% url 'update-pixel' object.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="x">Colonne:</label>
+            <input type="number" id="x" name="x" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="y">Ligne:</label>
+            <input type="number" id="y" name="y" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="color">Couleur (Hex):</label>
+            <input type="color" id="color" name="color" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success mt-3">Save</button>
+    </form>
+</div>
 {% endblock content %}

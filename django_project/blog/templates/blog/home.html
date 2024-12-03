@@ -1,17 +1,26 @@
 {% extends "blog/base.html" %}
 
 {% block content %}
-    {% for canva in canvases %} <!--using for loop with canvases dictionary-->
-        <article class="media content-section">
-            <img class="rounded-circle article-img" src="{{ canva.author.profile.image.url }}"> <!--for user profile picture-->
-            <div class="media-body">
-                <div class="article-metadata">
-                    <a class="mr-2" href="#">{{ canva.author }}</a>
-                    <small class="text-muted">{{ canva.date_posted|date:"F d, Y" }}</small>
-                </div>
-                <h2><a class="article-title" href="{% url 'canva-detail' canva.id %}">{{ canva.title }}</a></h2>  <!--we create a link page for canva with url 'canva-detail' and id is pk or primary key-->
-                <p class="article-content">{{ canva.content }}</p>
-            </div>
-        </article>
+<div class="container my-5">
+  <div class="row">
+    {% for canva in canvases %}
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title text-center">{{ canva.title }}</h5>
+          <p class="card-text text-muted">
+            {{ canva.content|truncatewords:20 }}
+          </p>
+          <p class="text-center text-muted">
+            {{ canva.sizeHeight }} x {{ canva.sizeWidth }} pixels
+          </p>
+          <div class="d-flex justify-content-center">
+            <a href="{% url 'canva-detail' canva.id %}" class="btn btn-primary btn-sm">Rejoindre</a>
+          </div>
+        </div>
+      </div>
+    </div>
     {% endfor %}
+  </div>
+</div>
 {% endblock content %}

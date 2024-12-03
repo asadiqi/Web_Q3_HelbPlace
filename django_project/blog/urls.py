@@ -1,5 +1,12 @@
 from django.urls import path
-from .views import CanvaListView, CanvaDetailView, CanvaCreateView, CanvaUpdateView, CanvaDeleteView
+from .views import (
+    CanvaListView,
+    CanvaDetailView,
+    CanvaCreateView,
+    CanvaUpdateView,
+    CanvaDeleteView,
+    join_canva
+)
 from . import views
 
 urlpatterns = [
@@ -9,4 +16,8 @@ urlpatterns = [
     path('canva/<int:pk>/update/', CanvaUpdateView.as_view(), name='canva-update'),
     path('canva/<int:pk>/delete/', CanvaDeleteView.as_view(), name='canva-delete'),
     path('statistic/', views.statistic, name='blog-statistic'),
+    path('canva/<int:pk>/join/', join_canva, name='join-canva'),
+    path('canva/<int:pk>/update-pixel/', views.update_pixel, name='update-pixel'),
+
+
 ]

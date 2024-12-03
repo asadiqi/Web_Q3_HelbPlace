@@ -99,7 +99,10 @@ body {
 .pixel {
   width: 30px;  
   height: 10px; 
+  display: inline-block;
   border: 1px solid #ddd;  
   cursor: pointer; 
+  margin: 1px;
+
 
 }

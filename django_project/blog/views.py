@@ -1,11 +1,15 @@
-import json
 from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Canva,Pixel
+from .models import Canva, JoinedCanva,Pixel
 from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView
+from django.shortcuts import get_object_or_404, redirect
+from django.http import HttpResponseRedirect
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+
 
 def home(request):
     context = {
@@ -20,19 +24,64 @@ class CanvaListView(ListView):
     ordering = ['-date_posted']
     
     
-
 class CanvaDetailView(DetailView):
     model = Canva
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
+        canva = self.object
+
+        # Vérifier si l'utilisateur a rejoint ou s'il est l'auteur
+        context['joined'] = canva.joined_users.filter(id=user.id).exists() if user.is_authenticated else False
+        context['is_author'] = canva.author == user
+
+        # Génération de la grille
         pixels = self.object.pixels.all()
         grid = [[None for _ in range(self.object.sizeWidth)] for _ in range(self.object.sizeHeight)]
         for pixel in pixels:
             grid[pixel.y][pixel.x] = pixel
         context['pixels'] = grid
-        context['canva'] = self.object  # Assure-toi que 'canva' est passé au template
         return context
+
+
+
+
+def join_canva(request, pk):
+    if request.method == "POST" and request.user.is_authenticated:
+        canva = get_object_or_404(Canva, pk=pk)
+
+        # Vérifie que l'utilisateur n'est pas l'auteur
+        if canva.author != request.user:
+            # Ajoute l'utilisateur à la liste des utilisateurs ayant rejoint
+            canva.joined_users.add(request.user)
+
+        # Redirige vers la page du Canva
+        return redirect('canva-detail', pk=pk)
+    return redirect('blog-home')  # Redirige vers la page d'accueil si non authentifié ou GET
+
+
+@login_required
+def update_pixel(request, pk):
+    canva = get_object_or_404(Canva, pk=pk)
+    if request.method == "POST":
+        x = int(request.POST.get('x'))
+        y = int(request.POST.get('y'))
+        color = request.POST.get('color')
+        
+        # Vérifier si le pixel existe et appartient au Canva
+        pixel = get_object_or_404(Pixel, canva=canva, x=x, y=y)
+        
+        # Mettre à jour la couleur
+        pixel.color = color
+        pixel.save()
+        
+        # Rediriger vers la page du Canva
+        return HttpResponseRedirect(reverse('canva-detail', args=[pk]))
+
+
+
+
 
 
 
@@ -40,7 +89,7 @@ class CanvaCreateView(LoginRequiredMixin, CreateView):
     model = Canva
     fields = ['title', 'sizeHeight', 'sizeWidth', 'timer']   
     template_name = 'blog/canva_form.html'
-    #success_url = reverse_lazy('blog-home')  # Redirection après création
+    success_url = reverse_lazy('blog-home')  # Redirection après création
    
     def form_valid(self, form):
         form.instance.author = self.request.user

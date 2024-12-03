@@ -3,13 +3,15 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-class Canva(models.Model): 
+class Canva(models.Model):
     title = models.CharField(max_length=100)
     sizeHeight = models.IntegerField()  
     sizeWidth = models.IntegerField()
     timer = models.IntegerField()
     date_posted = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    joined_users = models.ManyToManyField(User, related_name='joined_canvases', blank=True)
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if not self.pixels.exists():
@@ -19,9 +21,20 @@ class Canva(models.Model):
 
     def __str__(self):
         return self.title
+
+    
     
     
     #content = "000000;010101;000000;000000"
+    
+class JoinedCanva(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    canva = models.ForeignKey(Canva, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('user', 'canva')  # Un utilisateur ne peut rejoindre un Canva qu'une seule fois
+  
+    
     
     
 class Pixel(models.Model):

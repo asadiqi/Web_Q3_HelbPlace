@@ -1,8 +1,9 @@
+
 body {
-    font-family: 'Roboto', sans-serif;
-    background: linear-gradient(to right, #ece9e6, #ffffff);
-    color: #333;
-    padding-top: 5rem;
+  font-family: 'Roboto', sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+  margin-top: 5rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -77,27 +78,9 @@ h1, h2, h3, h4, h5, h6 {
   cursor: not-allowed;
 }
 
+/* Structure du container */
 .container {
-    max-width: 1100px;
-    margin: auto;
-    padding: 20px;
-}
-img.rounded-circle {
-    border: 5px solid #3498db;
-}
-
-.btn-info {
-    background-color: #3498db;
-    border-color: #2980b9;
-    font-size: 1rem;
-    padding: 12px 25px;
-    border-radius: 30px;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.btn-info:hover {
-    background-color: #2980b9;
-    transform: scale(1.1);
+  max-width: 1200px;
 }
 
 .row {
@@ -128,19 +111,6 @@ p.card-text {
 .card-text {
   color: #7f8c8d;
   font-size: 1rem;
-}
-
-.list-group-item {
-    border: none;
-    border-bottom: 1px solid #f1f1f1;
-}
-
-.list-group-item:hover {
-    background-color: #f9f9f9;
-}
-
-.text-primary {
-    color: #3498db !important;
 }
 
 /* Formulaire et autres éléments de l'interface */
@@ -234,16 +204,14 @@ input[type="number"], input[type="color"] {
 }
 
 .card {
-    background: #ffffff;
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+  border-radius: 10px;
+  transition: transform 0.2s, box-shadow 0.3s ease;
 }
 
 .card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 .card-title {

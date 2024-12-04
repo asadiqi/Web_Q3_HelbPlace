@@ -141,29 +141,31 @@ button[type="submit"]:hover {
   margin-bottom: 5px;
 }
 
-.pixel {
-  width: 15px;
-  height: 15px;
-  display: inline-block;
-  border-radius: 5px;
-  cursor: pointer;
-  margin: 2px;
-  transition: all 0.3s ease;
+.pixel:hover {
+  transform: scale(1.2);
+  border: 2px solid #666;
 }
+
 .canvas-wrapper {
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
 }
 
-.canvas-grid {
+.canvas-grid2 {
   display: flex;
   flex-direction: column;
   margin-top: 20px;
   margin-bottom: 15px;
 }
 
+.canvas-grid {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  height: 100%;
 
+}
 .modify-grid {
   background-color: #fff;
   padding: 20px;
@@ -241,3 +243,25 @@ input[type="number"], input[type="color"] {
 .site-header .navbar-nav .nav-link.active {
   font-weight: 500;
 }
+
+
+.canvas-wrapper {
+  width: 100%;
+  max-width: 400px; /* Largeur maximale fixe */
+  max-height: 200px; /* Hauteur maximale fixe */
+  overflow: auto;    /* Active les barres de défilement si nécessaire */
+  margin: 10px auto; /* Centrer la grille dans son conteneur */
+}
+
+
+.pixel {
+  width: 15px;    /* Largeur des pixels */
+  height: 15px;   /* Hauteur des pixels */
+  display: inline-block;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 2px;
+  transition: all 0.3s ease;
+}
+
+

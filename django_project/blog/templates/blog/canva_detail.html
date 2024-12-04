@@ -8,28 +8,30 @@
           {{ message }}
       </div>
   {% endif %}
-    
+
     <div class="statistic-button">
         <a href="{% url 'blog-statistic' %}?canva_id={{ canva.id }}" class="btn btn-primary">Voir les statistiques</a>
     </div>
 
+<div class="scrollable-canvas">
+    <div class="canvas-grid2">
+        {% for row in pixels %}
+            <div class="pixel-row">
+                {% for pixel in row %}
+                    <div
+                        class="pixel"
+                        style="background-color: {{ pixel.color }};"
+                        data-x="{{ pixel.x }}"
+                        data-y="{{ pixel.y }}">
+                    </div>
+                {% empty %}
+                    <p>No pixels available.</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
 
-  <div class="canvas-grid">
-      {% for row in pixels %}
-          <div class="pixel-row">
-              {% for pixel in row %}
-                  <div
-                      class="pixel"
-                      style="background-color: {{ pixel.color }};"
-                      data-x="{{ pixel.x }}"
-                      data-y="{{ pixel.y }}">
-                  </div>
-              {% empty %}
-                  <p>No pixels available.</p>
-              {% endfor %}
-          </div>
-      {% endfor %}
-  </div>
 
   <div class="modify-grid">
       <form method="POST" action="{% url 'update-pixel' canva.id %}" id="modify-pixel-form">

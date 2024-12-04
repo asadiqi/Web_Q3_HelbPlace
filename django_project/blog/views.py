@@ -1,4 +1,3 @@
-from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import Canva, Pixel, UserAction
@@ -8,9 +7,9 @@ from django.contrib.auth.decorators import login_required
 import json
 from django.utils.timezone import now
 from datetime import timedelta
-from django.db.models import Sum
 from django.contrib.auth.models import User
-
+from django.db.models import Sum
+from django.shortcuts import get_object_or_404, render
 def home(request):
     canvases = Canva.objects.annotate(
         total_modifications=Sum('useraction__modification_count')
@@ -166,6 +165,15 @@ def statistic(request):
 
 
 
+
+
 def user_profile(request, user_id):
     user = get_object_or_404(User, id=user_id)
-    return render(request, 'blog/profile.html', {'profile_user': user})
+    user_actions = UserAction.objects.filter(user=user).values(
+        'canva__title'
+    ).annotate(modification_count=Sum('modification_count')).order_by('-modification_count')
+
+    return render(request, 'blog/profile.html', {
+        'profile_user': user,
+        'user_canva_modifications': user_actions
+    })

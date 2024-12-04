@@ -8,6 +8,11 @@
           {{ message }}
       </div>
   {% endif %}
+    
+    <div class="statistic-button">
+        <a href="{% url 'blog-statistic' %}?canva_id={{ canva.id }}" class="btn btn-primary">Voir les statistiques</a>
+    </div>
+
 
   <div class="canvas-grid">
       {% for row in pixels %}

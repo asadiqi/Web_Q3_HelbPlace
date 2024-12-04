@@ -1,9 +1,11 @@
+{% extends "blog/base.html" %}
 
-{%  extends "blog/base.html" %}
 {% block content %}
-    <h1>Statistic page</h1>
-{% endblock content %}    
-
-
-
-
+    <h1>Page des Statistiques</h1>
+    {% if canva %}
+        <p>Voici les statistiques du canva intitulé : {{ canva.title }}</p>
+        <!-- Ajoutez ici plus de statistiques spécifiques au canva -->
+    {% else %}
+        <p>Aucun canva sélectionné.</p>
+    {% endif %}
+{% endblock %}

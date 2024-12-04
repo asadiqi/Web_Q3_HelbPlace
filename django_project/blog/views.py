@@ -165,5 +165,8 @@ class CanvaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.request.user == canva.author
 
 def statistic(request):
-    return render(request, 'blog/statistic.html', {'title': 'statistic'})
-
+    canva_id = request.GET.get('canva_id')
+    canva = None
+    if canva_id:
+        canva = get_object_or_404(Canva, id=canva_id)
+    return render(request, 'blog/statistic.html', {'canva': canva})

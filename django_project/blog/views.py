@@ -42,7 +42,6 @@ class CanvaDetailView(DetailView):
             context['time_remaining'] = 0
 
         return context
-
 @login_required
 def update_pixel(request, pk):
     canva = get_object_or_404(Canva, pk=pk)
@@ -65,7 +64,7 @@ def update_pixel(request, pk):
                     raise ValueError("Invalid coordinates: outside the canvas bounds.")
 
                 pixel = get_object_or_404(Pixel, canva=canva, x=x, y=y)
-                pixel.color = color
+                pixel.color = color  # Update pixel color
                 pixel.save()
 
                 canva.save_count += 1
@@ -73,7 +72,6 @@ def update_pixel(request, pk):
                 user_action.last_modified = now()
                 user_action.save()
 
-                # Increment user contribution
                 profile = request.user.profile
                 contributions = profile.contributions
                 contributions[str(pk)] = contributions.get(str(pk), 0) + 1
@@ -97,6 +95,7 @@ def update_pixel(request, pk):
             'pixels': grid
         }
         return render(request, 'blog/canva_detail.html', context)
+
 
 class CanvaCreateView(LoginRequiredMixin, CreateView):
     model = Canva

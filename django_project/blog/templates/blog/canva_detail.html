@@ -52,6 +52,7 @@
           const timerElement = document.getElementById('timer');
           const saveButton = document.querySelector('button[type="submit"]');
           let timeRemaining = parseInt(timerElement?.textContent, 10) || 0;
+          let clickedPixel = null;
 
           if (timeRemaining > 0) {
               saveButton.disabled = true;
@@ -72,53 +73,44 @@
 
           setInterval(updateTimer, 1000);
 
-          // Rendre chaque pixel cliquable pour modifier sa couleur
           const pixels = document.querySelectorAll('.pixel');
-          let clickedPixel = null;
 
           pixels.forEach(pixel => {
               pixel.addEventListener('click', function () {
-                  // Ne permet pas de modifier plusieurs pixels avant sauvegarde
                   if (clickedPixel) {
                       return;
                   }
 
-                  // Récupérer les coordonnées du pixel cliqué
                   const x = this.dataset.x;
                   const y = this.dataset.y;
 
-                  // Mettre à jour les champs cachés avec les coordonnées du pixel
                   document.getElementById('x').value = x;
                   document.getElementById('y').value = y;
 
-                  // Désactiver tous les autres pixels
                   pixels.forEach(p => {
                       if (p !== this) {
-                          p.style.pointerEvents = 'none'; 
+                          p.style.pointerEvents = 'none';
                       }
                   });
 
-                  // Marquer ce pixel comme cliqué
                   clickedPixel = this;
 
-                  // Modifier la couleur du pixel dans le formulaire
                   const colorInput = document.getElementById('color');
-                  const newColor = colorInput.value;
-
-                  // Changer la couleur de fond du pixel cliqué dans la grille
-                  this.style.backgroundColor = newColor;
+                  this.style.backgroundColor = colorInput.value;
               });
           });
 
-          // Réinitialiser l'état après la soumission du formulaire
-          document.getElementById('modify-pixel-form').addEventListener('submit', function () {
-              // Autoriser à nouveau les clics après la soumission
-              pixels.forEach(p => {
-                  p.style.pointerEvents = 'auto';
-              });
-
-              // Réinitialiser la variable clickedPixel
-              clickedPixel = null;
+          document.getElementById('modify-pixel-form').addEventListener('submit', function (e) {
+              if (!clickedPixel) {
+                  e.preventDefault();  // Prevent form submission
+                  alert('Please select a pixel to modify.');
+              } else {
+                  // Allow form submission and reset pointer events
+                  pixels.forEach(p => {
+                      p.style.pointerEvents = 'auto';
+                  });
+                  clickedPixel = null;
+              }
           });
       });
   </script>

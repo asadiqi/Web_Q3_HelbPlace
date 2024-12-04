@@ -1,12 +1,13 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Canva, Pixel
+from .models import Canva, Pixel, UserAction
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
-
+from django.utils.timezone import now
+from datetime import timedelta
 
 
 def home(request):
@@ -29,11 +30,33 @@ class CanvaDetailView(DetailView):
         for pixel in pixels:
             grid[pixel.y][pixel.x] = pixel
         context['pixels'] = grid
+
+        # Calcul du temps restant pour l'utilisateur
+        user_action = UserAction.objects.filter(user=self.request.user, canva=self.object).first()
+        if user_action:
+            time_since_last_action = now() - user_action.last_modified
+            context['time_remaining'] = max(0, self.object.timer - time_since_last_action.seconds)
+        else:
+            context['time_remaining'] = 0
         return context
+
 
 @login_required
 def update_pixel(request, pk):
     canva = get_object_or_404(Canva, pk=pk)
+    user_action, created = UserAction.objects.get_or_create(user=request.user, canva=canva)
+
+    # Vérification du timer
+    time_since_last_action = now() - user_action.last_modified
+    if time_since_last_action < timedelta(seconds=canva.timer):
+        time_remaining = (timedelta(seconds=canva.timer) - time_since_last_action).seconds
+        # Ajouter le message d'attente à l'objet context
+        context = {
+            'message': f'Please wait {time_remaining} seconds before modifying again.',
+            'canva': canva
+        }
+        return render(request, 'blog/canva_detail.html', context)  # Remplacer avec votre template de détail
+
     if request.method == "POST":
         x = int(request.POST.get('x'))
         y = int(request.POST.get('y'))
@@ -42,11 +65,14 @@ def update_pixel(request, pk):
         pixel.color = color
         pixel.save()
 
-        # Incrémentation du compteur save_count
+        # Mise à jour du compteur save_count et du UserAction
         canva.save_count += 1
         canva.save()
+        user_action.save()
 
         return HttpResponseRedirect(reverse('canva-detail', args=[pk]))
+
+
 
 
 class CanvaCreateView(LoginRequiredMixin, CreateView):
@@ -81,3 +107,4 @@ class CanvaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 def statistic(request):
     return render(request, 'blog/statistic.html', {'title': 'statistic'})
+

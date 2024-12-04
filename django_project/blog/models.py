@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
 
+
 class Canva(models.Model):
     title = models.CharField(max_length=100)
     sizeHeight = models.IntegerField()
@@ -34,3 +35,14 @@ class Pixel(models.Model):
 
     class Meta:
         unique_together = ('canva', 'x', 'y')
+
+
+
+class UserAction(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    canva = models.ForeignKey(Canva, on_delete=models.CASCADE)
+    last_modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'canva')
+

@@ -136,15 +136,14 @@ button[type="submit"]:hover {
   background-color: #10b981;
 }
 
-/* Pixel grid styles */
 .pixel-row {
   display: flex;
   margin-bottom: 5px;
 }
 
 .pixel {
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
   display: inline-block;
   border-radius: 5px;
   cursor: pointer;

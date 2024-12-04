@@ -55,7 +55,6 @@ def update_pixel(request, pk):
     time_since_last_action = now() - user_action.last_modified
     if time_since_last_action < timedelta(seconds=canva.timer):
         time_remaining = (timedelta(seconds=canva.timer) - time_since_last_action).seconds
-        # Ajouter le message d'attente à l'objet context
         context = {
             'message': f'Please wait {time_remaining} seconds before modifying again.',
             'canva': canva
@@ -63,21 +62,32 @@ def update_pixel(request, pk):
         return render(request, 'blog/canva_detail.html', context)
 
     if request.method == "POST":
-        x = int(request.POST.get('x'))
-        y = int(request.POST.get('y'))
-        color = request.POST.get('color')
-        pixel = get_object_or_404(Pixel, canva=canva, x=x, y=y)
-        pixel.color = color
-        pixel.save()
+        try:
+            x = int(request.POST.get('x'))
+            y = int(request.POST.get('y'))
+            color = request.POST.get('color')
 
-        canva.save_count += 1
-        canva.save()
-        user_action.save()
+            # Vérification si les coordonnées sont valides
+            if x < 0 or x >= canva.sizeWidth or y < 0 or y >= canva.sizeHeight:
+                raise ValueError("Invalid coordinates: outside the canvas bounds.")
 
-        return HttpResponseRedirect(reverse('canva-detail', args=[pk]))
+            pixel = get_object_or_404(Pixel, canva=canva, x=x, y=y)
+            pixel.color = color
+            pixel.save()
 
+            canva.save_count += 1
+            canva.save()
+            user_action.save()
 
+            return HttpResponseRedirect(reverse('canva-detail', args=[pk]))
 
+        except ValueError as e:
+            # En cas d'erreur (coordonnées invalides), afficher un message d'erreur
+            context = {
+                'message': str(e),
+                'canva': canva
+            }
+            return render(request, 'blog/canva_detail.html', context)
 
 class CanvaCreateView(LoginRequiredMixin, CreateView):
     model = Canva

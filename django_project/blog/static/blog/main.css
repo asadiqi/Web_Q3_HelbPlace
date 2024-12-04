@@ -152,17 +152,15 @@ button[type="submit"]:hover {
 }
 .canvas-wrapper {
   width: 100%;
-  overflow-x: auto;  /* Active le défilement horizontal */
-  overflow-y: hidden; /* Empêche le défilement vertical */
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .canvas-grid {
   display: flex;
   flex-direction: column;
-  margin: 20px 0;
-  padding: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  /* Ne pas utiliser 'overflow: hidden' ici, car il empêche le défilement horizontal */
+  margin-top: 20px;
+  margin-bottom: 15px;
 }
 
 

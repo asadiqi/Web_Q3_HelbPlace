@@ -150,28 +150,33 @@ button[type="submit"]:hover {
   margin: 2px;
   transition: all 0.3s ease;
 }
-
-.pixel:hover {
-  transform: scale(1.2);
-  border: 2px solid #666;
+.canvas-wrapper {
+  width: 100%;
+  overflow-x: auto;  /* Active le défilement horizontal */
+  overflow-y: hidden; /* Empêche le défilement vertical */
 }
 
 .canvas-grid {
   display: flex;
   flex-direction: column;
   margin: 20px 0;
-  border: 3px solid #333;
   padding: 10px;
-  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* Ne pas utiliser 'overflow: hidden' ici, car il empêche le défilement horizontal */
 }
+
 
 .modify-grid {
   background-color: #fff;
   padding: 20px;
-  border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
+
+.pixel:hover {
+  transform: scale(1.2);
+  border: 2px solid #666;
+}
+
 
 .form-group {
   margin-bottom: 15px;

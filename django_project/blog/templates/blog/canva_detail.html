@@ -1,126 +1,126 @@
 {% extends "blog/base.html" %}
 
 {% block content %}
-    <h2>{{ canva.title }}</h2>
+  <h2>{{ canva.title }}</h2>
 
-    {% if message %}
-        <div class="alert alert-warning">
-            {{ message }}
-        </div>
-    {% endif %}
+  {% if message %}
+      <div class="alert alert-warning">
+          {{ message }}
+      </div>
+  {% endif %}
 
-    <div class="canvas-grid">
-        {% for row in pixels %}
-            <div class="pixel-row">
-                {% for pixel in row %}
-                    <div
-                        class="pixel"
-                        style="background-color: {{ pixel.color }};"
-                        data-x="{{ pixel.x }}"
-                        data-y="{{ pixel.y }}">
-                    </div>
-                {% empty %}
-                    <p>No pixels available.</p>
-                {% endfor %}
-            </div>
-        {% endfor %}
-    </div>
+  <div class="canvas-grid">
+      {% for row in pixels %}
+          <div class="pixel-row">
+              {% for pixel in row %}
+                  <div
+                      class="pixel"
+                      style="background-color: {{ pixel.color }};"
+                      data-x="{{ pixel.x }}"
+                      data-y="{{ pixel.y }}">
+                  </div>
+              {% empty %}
+                  <p>No pixels available.</p>
+              {% endfor %}
+          </div>
+      {% endfor %}
+  </div>
 
-    <div class="modify-grid">
-        <form method="POST" action="{% url 'update-pixel' canva.id %}" id="modify-pixel-form">
-            {% csrf_token %}
-            <input type="hidden" id="x" name="x">
-            <input type="hidden" id="y" name="y">
-            <div class="form-group">
-                <label for="color">Color (Hex):</label>
-                <input type="color" id="color" name="color" class="form-control" required>
-            </div>
+  <div class="modify-grid">
+      <form method="POST" action="{% url 'update-pixel' canva.id %}" id="modify-pixel-form">
+          {% csrf_token %}
+          <input type="hidden" id="x" name="x">
+          <input type="hidden" id="y" name="y">
+          <div class="form-group">
+              <label for="color">Color (Hex):</label>
+              <input type="color" id="color" name="color" class="form-control" required>
+          </div>
 
-            {% if time_remaining > 0 %}
-                <div id="countdown-timer">
-                    <p>Please wait <span id="timer">{{ time_remaining }}</span> seconds before modifying again.</p>
-                </div>
-            {% else %}
-                <p>You can now modify this canva</p>
-            {% endif %}
-            <button type="submit" class="btn btn-success mt-3" id="save-button">Save</button>
-        </form>
-    </div>
+          {% if time_remaining > 0 %}
+              <div id="countdown-timer">
+                  <p>Please wait <span id="timer">{{ time_remaining }}</span> seconds before modifying again.</p>
+              </div>
+          {% else %}
+              <p>You can now modify this canva</p>
+          {% endif %}
+          <button type="submit" class="btn btn-success mt-3" id="save-button">Save</button>
+      </form>
+  </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const timerElement = document.getElementById('timer');
-            const saveButton = document.querySelector('button[type="submit"]');
-            let timeRemaining = parseInt(timerElement?.textContent, 10) || 0;
+  <script>
+      document.addEventListener('DOMContentLoaded', function () {
+          const timerElement = document.getElementById('timer');
+          const saveButton = document.querySelector('button[type="submit"]');
+          let timeRemaining = parseInt(timerElement?.textContent, 10) || 0;
 
-            if (timeRemaining > 0) {
-                saveButton.disabled = true;
-                saveButton.classList.add('disabled');
-            }
+          if (timeRemaining > 0) {
+              saveButton.disabled = true;
+              saveButton.classList.add('disabled');
+          }
 
-            function updateTimer() {
-                if (timeRemaining > 0) {
-                    timeRemaining -= 1;
-                    timerElement.textContent = timeRemaining;
+          function updateTimer() {
+              if (timeRemaining > 0) {
+                  timeRemaining -= 1;
+                  timerElement.textContent = timeRemaining;
 
-                    if (timeRemaining === 0) {
-                        saveButton.disabled = false;
-                        saveButton.classList.remove('disabled');
-                    }
-                }
-            }
+                  if (timeRemaining === 0) {
+                      saveButton.disabled = false;
+                      saveButton.classList.remove('disabled');
+                  }
+              }
+          }
 
-            setInterval(updateTimer, 1000);
+          setInterval(updateTimer, 1000);
 
-            // Rendre chaque pixel cliquable pour modifier sa couleur
-            const pixels = document.querySelectorAll('.pixel');
-            let clickedPixel = null;
+          // Rendre chaque pixel cliquable pour modifier sa couleur
+          const pixels = document.querySelectorAll('.pixel');
+          let clickedPixel = null;
 
-            pixels.forEach(pixel => {
-                pixel.addEventListener('click', function () {
-                    // Ne permet pas de modifier plusieurs pixels avant sauvegarde
-                    if (clickedPixel) {
-                        return; // Si un pixel est déjà sélectionné, ignorer le clic
-                    }
+          pixels.forEach(pixel => {
+              pixel.addEventListener('click', function () {
+                  // Ne permet pas de modifier plusieurs pixels avant sauvegarde
+                  if (clickedPixel) {
+                      return;
+                  }
 
-                    // Récupérer les coordonnées du pixel cliqué
-                    const x = this.dataset.x;
-                    const y = this.dataset.y;
+                  // Récupérer les coordonnées du pixel cliqué
+                  const x = this.dataset.x;
+                  const y = this.dataset.y;
 
-                    // Mettre à jour les champs cachés avec les coordonnées du pixel
-                    document.getElementById('x').value = x;
-                    document.getElementById('y').value = y;
+                  // Mettre à jour les champs cachés avec les coordonnées du pixel
+                  document.getElementById('x').value = x;
+                  document.getElementById('y').value = y;
 
-                    // Désactiver tous les autres pixels
-                    pixels.forEach(p => {
-                        if (p !== this) {
-                            p.style.pointerEvents = 'none'; // Désactiver le clic sur les autres pixels
-                        }
-                    });
+                  // Désactiver tous les autres pixels
+                  pixels.forEach(p => {
+                      if (p !== this) {
+                          p.style.pointerEvents = 'none'; 
+                      }
+                  });
 
-                    // Marquer ce pixel comme cliqué
-                    clickedPixel = this;
+                  // Marquer ce pixel comme cliqué
+                  clickedPixel = this;
 
-                    // Modifier la couleur du pixel dans le formulaire
-                    const colorInput = document.getElementById('color');
-                    const newColor = colorInput.value;
+                  // Modifier la couleur du pixel dans le formulaire
+                  const colorInput = document.getElementById('color');
+                  const newColor = colorInput.value;
 
-                    // Changer la couleur de fond du pixel cliqué dans la grille
-                    this.style.backgroundColor = newColor;
-                });
-            });
+                  // Changer la couleur de fond du pixel cliqué dans la grille
+                  this.style.backgroundColor = newColor;
+              });
+          });
 
-            // Rétablir l'état après la soumission du formulaire
-            document.getElementById('modify-pixel-form').addEventListener('submit', function () {
-                // Autoriser à nouveau les clics après la soumission
-                pixels.forEach(p => {
-                    p.style.pointerEvents = 'auto'; // Réactiver le clic sur tous les pixels
-                });
+          // Réinitialiser l'état après la soumission du formulaire
+          document.getElementById('modify-pixel-form').addEventListener('submit', function () {
+              // Autoriser à nouveau les clics après la soumission
+              pixels.forEach(p => {
+                  p.style.pointerEvents = 'auto';
+              });
 
-                // Réinitialiser la variable clickedPixel
-                clickedPixel = null;
-            });
-        });
-    </script>
+              // Réinitialiser la variable clickedPixel
+              clickedPixel = null;
+          });
+      });
+  </script>
 
 {% endblock %}

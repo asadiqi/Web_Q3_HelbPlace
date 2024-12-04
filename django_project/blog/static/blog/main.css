@@ -142,8 +142,8 @@ button[type="submit"]:hover {
 }
 
 .pixel {
-  width: 10px;
-  height: 10px;
+  width: 15px;
+  height: 15px;
   display: inline-block;
   border-radius: 5px;
   cursor: pointer;

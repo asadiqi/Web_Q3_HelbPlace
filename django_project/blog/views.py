@@ -93,17 +93,6 @@ def update_pixel(request, pk):
         }
         return render(request, 'blog/canva_detail.html', context)
 
-def profile(request):
-    user_actions = UserAction.objects.filter(user=request.user)
-    print("test")
-
-    print(user_actions)
-    context = {
-        'user_actions': user_actions
-    }
-    return render(request, 'users/profile.html', context)
-
-
 class CanvaCreateView(LoginRequiredMixin, CreateView):
     model = Canva
     fields = ['title', 'sizeHeight', 'sizeWidth', 'timer']

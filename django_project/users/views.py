@@ -24,11 +24,9 @@ def logout_view(request):
     return render(request, 'users/logout.html')  # render the logout template
 
 
-@login_required()  # Restreindre l'accès à cette vue aux utilisateurs authentifiés
+@login_required()
 def profile(request):
-    print("testttt")
-    # Récupérer les actions de l'utilisateur sur les canvases
-    user_actions = UserAction.objects.filter(user=request.user)
+    user_actions = UserAction.objects.filter(user=request.user).order_by('-modification_count')
 
     if request.method == 'POST':
         u_form = UserUpdateForm(request.POST, instance=request.user)  # Formulaire pour la mise à jour des informations utilisateur
@@ -45,6 +43,6 @@ def profile(request):
     context = {
         'u_form': u_form,
         'p_form': p_form,
-        'user_actions': user_actions  # Ajouter les actions de l'utilisateur sur les canvases
+        'user_actions': user_actions
     }
     return render(request, 'users/profile.html', context)  # Rendre le template du profil

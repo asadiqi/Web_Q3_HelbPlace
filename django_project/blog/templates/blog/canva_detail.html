@@ -9,6 +9,8 @@
         </div>
     {% endif %}
 
+
+
     <div class="canvas-grid">
         {% for row in pixels %}
             <div class="pixel-row">
@@ -41,9 +43,43 @@
                 <label for="color">Color (Hex):</label>
                 <input type="color" id="color" name="color" class="form-control" required>
             </div>
-            
-            <button type="submit" class="btn btn-success mt-3">Save</button>
+
+            {% if time_remaining > 0 %}
+                <div id="countdown-timer">
+                    <p>Please wait <span id="timer">{{ time_remaining }}</span> seconds before modifying again.</p>
+                </div>
+            {% else %}
+                <p>You can now modify this canva</p>
+            {% endif %}
+            <button type="submit" class="btn btn-success mt-3" id="save-button">Save</button>
         </form>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const timerElement = document.getElementById('timer');
+            const saveButton = document.querySelector('button[type="submit"]');
+
+            let timeRemaining = parseInt(timerElement?.textContent, 10) || 0;
+
+            if (timeRemaining > 0) {
+                saveButton.disabled = true;
+                saveButton.classList.add('disabled');
+            }
+
+            function updateTimer() {
+                if (timeRemaining > 0) {
+                    timeRemaining -= 1;
+                    timerElement.textContent = timeRemaining;
+
+                    if (timeRemaining === 0) {
+                        saveButton.disabled = false;
+                        saveButton.classList.remove('disabled');
+                    }
+                }
+            }
+
+            setInterval(updateTimer, 1000);
+        });
+    </script>
 {% endblock %}

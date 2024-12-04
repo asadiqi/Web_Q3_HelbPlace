@@ -37,13 +37,12 @@ class CanvaDetailView(DetailView):
             time_since_last_action = now() - user_action.last_modified
             time_remaining = max(0, self.object.timer - time_since_last_action.seconds)
             context['time_remaining'] = time_remaining
-
-            if time_remaining > 0:
-                context['message'] = f'Please wait {time_remaining} seconds before modifying again.'
         else:
             context['time_remaining'] = 0
 
         return context
+
+
 
 @login_required
 def update_pixel(request, pk):

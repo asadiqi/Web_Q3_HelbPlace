@@ -8,6 +8,7 @@
                 <table class="table table-hover table-striped" id="rankingTable">
                     <thead class="table-dark">
                         <tr>
+                            <th scope="col">Rank</th>
                             <th scope="col">Username</th>
                             <th scope="col">Modification</th>
                         </tr>
@@ -15,6 +16,7 @@
                     <tbody>
                         {% for user_ranking in user_rankings %}
                             <tr>
+                                <td>{{ forloop.counter }}</td> <!-- Add ranking -->
                                 <td>{{ user_ranking.user__username }}</td>
                                 <td>{{ user_ranking.modification_count }}</td>
                             </tr>

@@ -43,7 +43,6 @@ class CanvaDetailView(DetailView):
         return context
 
 
-
 @login_required
 def update_pixel(request, pk):
     canva = get_object_or_404(Canva, pk=pk)
@@ -57,7 +56,37 @@ def update_pixel(request, pk):
 
     # Vérification du timer
     time_since_last_action = now() - user_action.last_modified
-    if time_since_last_action < timedelta(seconds=canva.timer):
+    if created or time_since_last_action >= timedelta(seconds=canva.timer):
+        # Permettre la modification immédiatement si c'est la première fois ou si le timer est écoulé
+        if request.method == "POST":
+            try:
+                x = int(request.POST.get('x'))
+                y = int(request.POST.get('y'))
+                color = request.POST.get('color')
+
+                # Vérification si les coordonnées sont valides
+                if x < 0 or x >= canva.sizeWidth or y < 0 or y >= canva.sizeHeight:
+                    raise ValueError("Invalid coordinates: outside the canvas bounds.")
+
+                pixel = get_object_or_404(Pixel, canva=canva, x=x, y=y)
+                pixel.color = color
+                pixel.save()
+
+                canva.save_count += 1
+                canva.save()
+                user_action.save()
+
+                return HttpResponseRedirect(reverse('canva-detail', args=[pk]))
+
+            except ValueError as e:
+                # En cas d'erreur (coordonnées invalides), afficher un message d'erreur
+                context = {
+                    'message': str(e),
+                    'canva': canva,
+                    'pixels': grid  # Inclure la grille dans le contexte
+                }
+                return render(request, 'blog/canva_detail.html', context)
+    else:
         time_remaining = (timedelta(seconds=canva.timer) - time_since_last_action).seconds
         context = {
             'message': f'Please wait {time_remaining} seconds before modifying again.',
@@ -66,34 +95,6 @@ def update_pixel(request, pk):
         }
         return render(request, 'blog/canva_detail.html', context)
 
-    if request.method == "POST":
-        try:
-            x = int(request.POST.get('x'))
-            y = int(request.POST.get('y'))
-            color = request.POST.get('color')
-
-            # Vérification si les coordonnées sont valides
-            if x < 0 or x >= canva.sizeWidth or y < 0 or y >= canva.sizeHeight:
-                raise ValueError("Invalid coordinates: outside the canvas bounds.")
-
-            pixel = get_object_or_404(Pixel, canva=canva, x=x, y=y)
-            pixel.color = color
-            pixel.save()
-
-            canva.save_count += 1
-            canva.save()
-            user_action.save()
-
-            return HttpResponseRedirect(reverse('canva-detail', args=[pk]))
-
-        except ValueError as e:
-            # En cas d'erreur (coordonnées invalides), afficher un message d'erreur
-            context = {
-                'message': str(e),
-                'canva': canva,
-                'pixels': grid  # Inclure la grille dans le contexte
-            }
-            return render(request, 'blog/canva_detail.html', context)
 
 
 class CanvaCreateView(LoginRequiredMixin, CreateView):

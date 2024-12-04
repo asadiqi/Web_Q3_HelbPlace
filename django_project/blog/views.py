@@ -5,7 +5,7 @@ from .models import Canva, Pixel, UserAction
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse_lazy
+import json
 from django.utils.timezone import now
 from datetime import timedelta
 
@@ -62,7 +62,7 @@ def update_pixel(request, pk):
         context = {
             'message': f'Please wait {time_remaining} seconds before modifying again.',
             'canva': canva,
-            'pixels': grid  # Inclure la grille dans le contexte
+            'pixels': grid
         }
         return render(request, 'blog/canva_detail.html', context)
 
@@ -100,11 +100,48 @@ class CanvaCreateView(LoginRequiredMixin, CreateView):
     model = Canva
     fields = ['title', 'sizeHeight', 'sizeWidth', 'timer']
     template_name = 'blog/canva_form.html'
-    success_url = reverse_lazy('blog-home')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Initialisation de la grille de pixels avec des valeurs par défaut
+        size_width = self.request.POST.get('sizeWidth', 5)
+        size_height = self.request.POST.get('sizeHeight', 5)
+
+        # Créer une grille de pixels par défaut
+        context['pixels'] = [[{'x': x, 'y': y, 'color': '#FFFFFF'} for x in range(int(size_width))] for y in
+                             range(int(size_height))]
+
+        return context
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+
+        # Une fois que le canvas est créé, gérer les pixels
+        if self.object:
+            size_width = form.cleaned_data['sizeWidth']
+            size_height = form.cleaned_data['sizeHeight']
+
+            # Récupérer les couleurs des pixels envoyées par le formulaire
+            pixel_data = json.loads(self.request.POST.get('pixel_data', '[]'))
+
+            # Mettre à jour ou créer les pixels
+            for pixel in pixel_data:
+                x = pixel['x']
+                y = pixel['y']
+                color = pixel['color']
+
+                # Créer un pixel dans la base de données
+                Pixel.objects.update_or_create(
+                    canva=self.object,
+                    x=x,
+                    y=y,
+                    defaults={'color': color}
+                )
+
+        return response
+
 
 class CanvaUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Canva

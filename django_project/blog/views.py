@@ -45,11 +45,16 @@ class CanvaDetailView(DetailView):
 
         return context
 
-
 @login_required
 def update_pixel(request, pk):
     canva = get_object_or_404(Canva, pk=pk)
     user_action, created = UserAction.objects.get_or_create(user=request.user, canva=canva)
+
+    # Récupérer la grille de pixels
+    pixels = canva.pixels.all()
+    grid = [[None for _ in range(canva.sizeWidth)] for _ in range(canva.sizeHeight)]
+    for pixel in pixels:
+        grid[pixel.y][pixel.x] = pixel
 
     # Vérification du timer
     time_since_last_action = now() - user_action.last_modified
@@ -57,7 +62,8 @@ def update_pixel(request, pk):
         time_remaining = (timedelta(seconds=canva.timer) - time_since_last_action).seconds
         context = {
             'message': f'Please wait {time_remaining} seconds before modifying again.',
-            'canva': canva
+            'canva': canva,
+            'pixels': grid  # Inclure la grille dans le contexte
         }
         return render(request, 'blog/canva_detail.html', context)
 
@@ -85,9 +91,11 @@ def update_pixel(request, pk):
             # En cas d'erreur (coordonnées invalides), afficher un message d'erreur
             context = {
                 'message': str(e),
-                'canva': canva
+                'canva': canva,
+                'pixels': grid  # Inclure la grille dans le contexte
             }
             return render(request, 'blog/canva_detail.html', context)
+
 
 class CanvaCreateView(LoginRequiredMixin, CreateView):
     model = Canva

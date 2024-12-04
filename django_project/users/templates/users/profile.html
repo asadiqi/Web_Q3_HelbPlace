@@ -3,42 +3,46 @@
 {% load crispy_forms_filters %}
 
 {% block content %}
-  <div class="content-section">
-    <!-- Profil utilisateur -->
-    <div class="media">
-      <img class="rounded-circle account-img" src="{{ user.profile.image.url }}" alt="Profile Image">
-      <div class="media-body">
-        <h2 class="account-heading">{{ user.username }}</h2>
-        <p class="text-secondary">{{ user.email }}</p>
-      </div>
+<div class="container py-4">
+    <div class="row">
+        <!-- Profil utilisateur -->
+        <div class="col-md-4 text-center">
+            <img class="rounded-circle shadow-sm mb-3" src="{{ user.profile.image.url }}" alt="Profile Image" style="width: 150px; height: 150px;">
+            <h2 class="text-primary">{{ user.username }}</h2>
+            <p class="text-muted">{{ user.email }}</p>
+        </div>
+        <div class="col-md-8">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="card shadow-sm p-4">
+                    <h4 class="card-title text-info">Mise à jour du profil</h4>
+                    <hr>
+                    <fieldset class="form-group">
+                        {{ u_form|crispy }}
+                        {{ p_form|crispy }}
+                    </fieldset>
+                    <div class="form-group text-end">
+                        <button type="submit" class="btn btn-info btn-lg">Mettre à jour</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <!-- Formulaire pour mise à jour du profil -->
-    <form method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-      <fieldset class="form-group">
-        <legend class="border-bottom mb-4">Profile Info</legend>
-        {{ u_form|crispy }}
-        {{ p_form|crispy }}
-      </fieldset>
-      <div class="form-group">
-        <button type="submit" class="btn btn-outline-info">Update</button>
-      </div>
-    </form>
-
-    <!-- Section pour les contributions -->
-    <hr>
-    <h3>Canvas Contributions</h3>
-    <ul>
-      {% if user.profile.contributions %}
-        {% for canvas_id, count in user.profile.contributions.items %}
-          <li>
-            <a href="{% url 'canva-detail' canvas_id %}">Canvas {{ canvas_id }}</a>: {{ count }} contributions
-          </li>
-        {% endfor %}
-      {% else %}
-        <p>No contributions yet.</p>
-      {% endif %}
-    </ul>
-  </div>
+    <!-- Contributions -->
+    <div class="mt-5">
+        <h3 class="text-secondary">Vos Contributions</h3>
+        <div class="list-group shadow-sm">
+            {% if user.profile.contributions %}
+                {% for canvas_id, count in user.profile.contributions.items %}
+                    <a href="{% url 'canva-detail' canvas_id %}" class="list-group-item list-group-item-action">
+                        <strong>Canvas {{ canvas_id }}</strong>: {{ count }} contributions
+                    </a>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">Aucune contribution pour l'instant.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock content %}

@@ -5,33 +5,31 @@
 {% block content %}
 <div class="container py-4">
     <div class="row">
-        <!-- Profil utilisateur -->
-        <div class="col-md-4 text-center">
-            <img class="rounded-circle shadow-sm mb-3" src="{{ user.profile.image.url }}" alt="Profile Image" style="width: 150px; height: 150px;">
-            <h2 class="text-primary">{{ user.username }}</h2>
-            <p class="text-muted">{{ user.email }}</p>
-        </div>
+
         <div class="col-md-8">
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="card shadow-sm p-4">
-                    <h4 class="card-title text-info">Mise à jour du profil</h4>
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            <img class="rounded-circle shadow-sm mb-3" src="{{ user.profile.image.url }}" alt="Profile Image" style="width: 100px; height: 100px;">
+                        </div>
+                    </div>
                     <hr>
                     <fieldset class="form-group">
                         {{ u_form|crispy }}
                         {{ p_form|crispy }}
                     </fieldset>
                     <div class="form-group text-end">
-                        <button type="submit" class="btn btn-info btn-lg">Mettre à jour</button>
+                        <button type="submit" class="btn btn-info btn-lg">Update</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Contributions -->
     <div class="mt-5">
-        <h3 class="text-secondary">Vos Contributions</h3>
+        <h3 class="text-secondary">Contributions</h3>
         <div class="list-group shadow-sm">
             {% if user.profile.contributions %}
                 {% for canvas_id, count in user.profile.contributions.items %}
@@ -40,7 +38,7 @@
                     </a>
                 {% endfor %}
             {% else %}
-                <p class="text-muted">Aucune contribution pour l'instant.</p>
+                <p class="text-muted">No contributions for the moment</p>
             {% endif %}
         </div>
     </div>

@@ -1,25 +1,44 @@
 {% extends "blog/base.html" %}
-{% load crispy_forms_tags %} <!-- Charge les tags crispy -->
+{% load crispy_forms_tags %}
+{% load crispy_forms_filters %}
 
 {% block content %}
   <div class="content-section">
+    <!-- Profil utilisateur -->
     <div class="media">
-      <img class="rounded-circle account-img" src="{{ user.profile.image.url }}">
+      <img class="rounded-circle account-img" src="{{ user.profile.image.url }}" alt="Profile Image">
       <div class="media-body">
         <h2 class="account-heading">{{ user.username }}</h2>
         <p class="text-secondary">{{ user.email }}</p>
       </div>
     </div>
-    <form method="POST" enctype="multipart/form-data">  <!-- creating un form for registration of new users -->
-      {% csrf_token %} <!-- this is for security -->
+
+    <!-- Formulaire pour mise à jour du profil -->
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
       <fieldset class="form-group">
-        <legend class="border-bottom mb-4">Profile info</legend>
+        <legend class="border-bottom mb-4">Profile Info</legend>
         {{ u_form|crispy }}
-        {{ p_form|crispy }}  <!-- Utilisation du filtre crispy -->
+        {{ p_form|crispy }}
       </fieldset>
       <div class="form-group">
-        <button type="submit" class="btn btn-outline-info">Update</button> <!-- creating submit button -->
+        <button type="submit" class="btn btn-outline-info">Update</button>
       </div>
-    </form> 
+    </form>
+
+    <!-- Section pour les contributions -->
+    <hr>
+    <h3>Canvas Contributions</h3>
+    <ul>
+      {% if user.profile.contributions %}
+        {% for canvas_id, count in user.profile.contributions.items %}
+          <li>
+            <a href="{% url 'canva-detail' canvas_id %}">Canvas {{ canvas_id }}</a>: {{ count }} contributions
+          </li>
+        {% endfor %}
+      {% else %}
+        <p>No contributions yet.</p>
+      {% endif %}
+    </ul>
   </div>
 {% endblock content %}

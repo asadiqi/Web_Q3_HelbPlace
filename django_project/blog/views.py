@@ -14,6 +14,7 @@ def home(request):
     context = {'canvases': Canva.objects.all().order_by('-save_count')}
     return render(request, 'blog/home.html', context)
 
+
 class CanvaListView(ListView):
     model = Canva
     template_name = 'blog/home.html'
@@ -42,29 +43,24 @@ class CanvaDetailView(DetailView):
 
         return context
 
-
 @login_required
 def update_pixel(request, pk):
     canva = get_object_or_404(Canva, pk=pk)
     user_action, created = UserAction.objects.get_or_create(user=request.user, canva=canva)
 
-    # Récupérer la grille de pixels
     pixels = canva.pixels.all()
     grid = [[None for _ in range(canva.sizeWidth)] for _ in range(canva.sizeHeight)]
     for pixel in pixels:
         grid[pixel.y][pixel.x] = pixel
 
-    # Vérification du timer
     time_since_last_action = now() - user_action.last_modified
     if created or time_since_last_action >= timedelta(seconds=canva.timer):
-        # Permettre la modification immédiatement si c'est la première fois ou si le timer est écoulé
         if request.method == "POST":
             try:
                 x = int(request.POST.get('x'))
                 y = int(request.POST.get('y'))
                 color = request.POST.get('color')
 
-                # Vérification si les coordonnées sont valides
                 if x < 0 or x >= canva.sizeWidth or y < 0 or y >= canva.sizeHeight:
                     raise ValueError("Invalid coordinates: outside the canvas bounds.")
 
@@ -74,16 +70,23 @@ def update_pixel(request, pk):
 
                 canva.save_count += 1
                 canva.save()
+                user_action.last_modified = now()
                 user_action.save()
+
+                # Increment user contribution
+                profile = request.user.profile
+                contributions = profile.contributions
+                contributions[str(pk)] = contributions.get(str(pk), 0) + 1
+                profile.contributions = contributions
+                profile.save()
 
                 return HttpResponseRedirect(reverse('canva-detail', args=[pk]))
 
             except ValueError as e:
-                # En cas d'erreur (coordonnées invalides), afficher un message d'erreur
                 context = {
                     'message': str(e),
                     'canva': canva,
-                    'pixels': grid  # Inclure la grille dans le contexte
+                    'pixels': grid
                 }
                 return render(request, 'blog/canva_detail.html', context)
     else:
@@ -94,8 +97,6 @@ def update_pixel(request, pk):
             'pixels': grid
         }
         return render(request, 'blog/canva_detail.html', context)
-
-
 
 class CanvaCreateView(LoginRequiredMixin, CreateView):
     model = Canva

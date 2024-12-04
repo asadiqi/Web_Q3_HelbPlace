@@ -1,4 +1,3 @@
-/* Corps de la page */
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #f9f9f9;
@@ -142,8 +141,8 @@ button[type="submit"]:hover {
 }
 
 .pixel {
-  width: 20px;
-  height: 20px;
+  width: 10px;
+  height: 10px;
   display: inline-block;
   border-radius: 5px;
   cursor: pointer;

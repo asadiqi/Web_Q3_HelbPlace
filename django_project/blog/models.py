@@ -11,7 +11,6 @@ class Canva(models.Model):
     timer = models.IntegerField()
     date_posted = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    save_count = models.IntegerField(default=0)  # Nouveau champ
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -42,7 +41,7 @@ class UserAction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     canva = models.ForeignKey(Canva, on_delete=models.CASCADE)
     last_modified = models.DateTimeField(auto_now=True)
+    modification_count = models.PositiveIntegerField(default=0)
 
-    class Meta:
-        unique_together = ('user', 'canva')
-
+    def __str__(self):
+        return f'{self.user.username} - {self.canva.title}'

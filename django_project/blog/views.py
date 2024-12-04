@@ -41,8 +41,10 @@ class CanvaDetailView(DetailView):
             context['time_remaining'] = 0
 
         return context
+
 @login_required
 def update_pixel(request, pk):
+    print("Updating pixel...")
     canva = get_object_or_404(Canva, pk=pk)
     user_action, created = UserAction.objects.get_or_create(user=request.user, canva=canva)
 
@@ -63,12 +65,15 @@ def update_pixel(request, pk):
                     raise ValueError("Invalid coordinates: outside the canvas bounds.")
 
                 pixel = get_object_or_404(Pixel, canva=canva, x=x, y=y)
-                pixel.color = color  # Update pixel color
+                pixel.color = color
                 pixel.save()
 
                 canva.save()
                 user_action.last_modified = now()
+                user_action.modification_count += 1
                 user_action.save()
+                print(
+                    f"Modification count for {user_action.user.username} on {user_action.canva.title}: {user_action.modification_count}")
 
                 return HttpResponseRedirect(reverse('canva-detail', args=[pk]))
 
@@ -87,6 +92,16 @@ def update_pixel(request, pk):
             'pixels': grid
         }
         return render(request, 'blog/canva_detail.html', context)
+
+def profile(request):
+    user_actions = UserAction.objects.filter(user=request.user)
+    print("test")
+
+    print(user_actions)
+    context = {
+        'user_actions': user_actions
+    }
+    return render(request, 'users/profile.html', context)
 
 
 class CanvaCreateView(LoginRequiredMixin, CreateView):
@@ -156,9 +171,13 @@ class CanvaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         canva = self.get_object()
         return self.request.user == canva.author
 
+
+
 def statistic(request):
     canva_id = request.GET.get('canva_id')
     canva = None
     if canva_id:
         canva = get_object_or_404(Canva, id=canva_id)
     return render(request, 'blog/statistic.html', {'canva': canva})
+
+

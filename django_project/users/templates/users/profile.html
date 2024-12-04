@@ -5,7 +5,6 @@
 {% block content %}
 <div class="container py-4">
     <div class="row">
-
         <div class="col-md-8">
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -25,6 +24,16 @@
                     </div>
                 </div>
             </form>
+            <hr>
+            <h4>Your Contributions:</h4>
+            <ul>
+    {% for action in user_actions %}
+        <li>
+            <strong>{{ action.canva.title }}</strong> - Modified {{ action.modification_count }} times
+        </li>
+    {% endfor %}
+</ul>
+
         </div>
     </div>
 </div>

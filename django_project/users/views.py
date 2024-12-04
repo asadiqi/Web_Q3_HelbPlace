@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+
+from blog.models import UserAction
 from .forms import USERRegisterForm, UserUpdateForm, ProfileUpdateForm
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -22,22 +24,27 @@ def logout_view(request):
     return render(request, 'users/logout.html')  # render the logout template
 
 
-@login_required()  # restrict access to this view to authenticated users
+@login_required()  # Restreindre l'accès à cette vue aux utilisateurs authentifiés
 def profile(request):
+    print("testttt")
+    # Récupérer les actions de l'utilisateur sur les canvases
+    user_actions = UserAction.objects.filter(user=request.user)
+
     if request.method == 'POST':
-        u_form = UserUpdateForm(request.POST, instance=request.user)  # create a form for updating user info
-        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)  # form for updating profile picture
+        u_form = UserUpdateForm(request.POST, instance=request.user)  # Formulaire pour la mise à jour des informations utilisateur
+        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)  # Formulaire pour la mise à jour de l'image de profil
         if u_form.is_valid() and p_form.is_valid():
-            u_form.save()  # save updated user information
-            p_form.save()  # save updated profile picture
-            messages.success(request, 'Your account has been updated!')  # success message
-            return redirect('profile')  # redirect to the profile page
+            u_form.save()  # Sauvegarder les informations utilisateur mises à jour
+            p_form.save()  # Sauvegarder l'image de profil mise à jour
+            messages.success(request, 'Your account has been updated!')  # Message de succès
+            return redirect('profile')  # Rediriger vers la page de profil
     else:
-        u_form = UserUpdateForm(instance=request.user)  # create form for updating user info
-        p_form = ProfileUpdateForm(instance=request.user.profile)  # form for updating profile picture
-    
+        u_form = UserUpdateForm(instance=request.user)  # Créer un formulaire pour mettre à jour les infos utilisateur
+        p_form = ProfileUpdateForm(instance=request.user.profile)  # Formulaire pour mettre à jour l'image de profil
+
     context = {
         'u_form': u_form,
-        'p_form': p_form
+        'p_form': p_form,
+        'user_actions': user_actions  # Ajouter les actions de l'utilisateur sur les canvases
     }
-    return render(request, 'users/profile.html', context)  # render the profile template
+    return render(request, 'users/profile.html', context)  # Rendre le template du profil

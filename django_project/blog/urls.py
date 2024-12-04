@@ -10,6 +10,7 @@ from .views import (
 from . import views
 
 urlpatterns = [
+    path('', views.home, name='home'),
     path('', CanvaListView.as_view(), name='blog-home'),
     path('canva/<int:pk>/', CanvaDetailView.as_view(), name='canva-detail'),
     path('canva/new/', CanvaCreateView.as_view(), name='canva-create'),

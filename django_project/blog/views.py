@@ -8,10 +8,14 @@ from django.contrib.auth.decorators import login_required
 import json
 from django.utils.timezone import now
 from datetime import timedelta
-
+from django.db.models import Sum
 
 def home(request):
-    context = {'canvases': Canva.objects.all()}
+    canvases = Canva.objects.annotate(
+        total_modifications=Sum('useraction__modification_count')
+    ).order_by('-total_modifications')
+
+    context = {'canvases': canvases}
     return render(request, 'blog/home.html', context)
 
 

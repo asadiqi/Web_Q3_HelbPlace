@@ -41,13 +41,7 @@
                 <label for="color">Color (Hex):</label>
                 <input type="color" id="color" name="color" class="form-control" required>
             </div>
-
-            {% if time_remaining > 0 %}
-                <p>You need to wait {{ time_remaining }} seconds before modifying again.</p>
-            {% else %}
-                <p>You can modify the grid now.</p>
-            {% endif %}
-
+            
             <button type="submit" class="btn btn-success mt-3">Save</button>
         </form>
     </div>

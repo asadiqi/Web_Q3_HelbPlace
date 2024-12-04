@@ -35,9 +35,14 @@ class CanvaDetailView(DetailView):
         user_action = UserAction.objects.filter(user=self.request.user, canva=self.object).first()
         if user_action:
             time_since_last_action = now() - user_action.last_modified
-            context['time_remaining'] = max(0, self.object.timer - time_since_last_action.seconds)
+            time_remaining = max(0, self.object.timer - time_since_last_action.seconds)
+            context['time_remaining'] = time_remaining
+
+            if time_remaining > 0:
+                context['message'] = f'Please wait {time_remaining} seconds before modifying again.'
         else:
             context['time_remaining'] = 0
+
         return context
 
 
@@ -55,7 +60,7 @@ def update_pixel(request, pk):
             'message': f'Please wait {time_remaining} seconds before modifying again.',
             'canva': canva
         }
-        return render(request, 'blog/canva_detail.html', context)  # Remplacer avec votre template de détail
+        return render(request, 'blog/canva_detail.html', context)
 
     if request.method == "POST":
         x = int(request.POST.get('x'))
@@ -65,7 +70,6 @@ def update_pixel(request, pk):
         pixel.color = color
         pixel.save()
 
-        # Mise à jour du compteur save_count et du UserAction
         canva.save_count += 1
         canva.save()
         user_action.save()

@@ -9,7 +9,7 @@ import json
 from django.utils.timezone import now
 from datetime import timedelta
 from django.db.models import Sum
-
+from django.contrib.auth.models import User
 
 def home(request):
     canvases = Canva.objects.annotate(
@@ -156,10 +156,16 @@ def statistic(request):
     # Si un canvas est sélectionné, on récupère les utilisateurs et leur nombre de modifications
     if canva:
         user_rankings = UserAction.objects.filter(canva=canva) \
-            .values('user__username') \
+            .values('user__username', 'user__id') \
             .annotate(modification_count=Sum('modification_count')) \
-            .order_by('-modification_count')  # Trier par nombre de modifications
+            .order_by('-modification_count')
 
         return render(request, 'blog/statistic.html', {'canva': canva, 'user_rankings': user_rankings})
 
     return render(request, 'blog/statistic.html', {'canva': canva})
+
+
+
+def user_profile(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    return render(request, 'blog/profile.html', {'profile_user': user})

@@ -149,8 +149,17 @@ class CanvaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         return self.request.user == self.get_object().author
 
-
 def statistic(request):
     canva_id = request.GET.get('canva_id')
     canva = get_object_or_404(Canva, id=canva_id) if canva_id else None
+
+    # Si un canvas est sélectionné, on récupère les utilisateurs et leur nombre de modifications
+    if canva:
+        user_rankings = UserAction.objects.filter(canva=canva) \
+            .values('user__username') \
+            .annotate(modification_count=Sum('modification_count')) \
+            .order_by('-modification_count')  # Trier par nombre de modifications
+
+        return render(request, 'blog/statistic.html', {'canva': canva, 'user_rankings': user_rankings})
+
     return render(request, 'blog/statistic.html', {'canva': canva})

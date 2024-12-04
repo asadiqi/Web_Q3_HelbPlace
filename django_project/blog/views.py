@@ -11,7 +11,7 @@ from datetime import timedelta
 
 
 def home(request):
-    context = {'canvases': Canva.objects.all().order_by('-save_count')}
+    context = {'canvases': Canva.objects.all()}
     return render(request, 'blog/home.html', context)
 
 
@@ -19,7 +19,6 @@ class CanvaListView(ListView):
     model = Canva
     template_name = 'blog/home.html'
     context_object_name = 'canvases'
-    ordering = ['-save_count']
 
 class CanvaDetailView(DetailView):
     model = Canva
@@ -67,16 +66,9 @@ def update_pixel(request, pk):
                 pixel.color = color  # Update pixel color
                 pixel.save()
 
-                canva.save_count += 1
                 canva.save()
                 user_action.last_modified = now()
                 user_action.save()
-
-                profile = request.user.profile
-                contributions = profile.contributions
-                contributions[str(pk)] = contributions.get(str(pk), 0) + 1
-                profile.contributions = contributions
-                profile.save()
 
                 return HttpResponseRedirect(reverse('canva-detail', args=[pk]))
 

@@ -17,9 +17,6 @@
           <p class="text-center text-muted mb-2">
             <strong>Waiting Time:</strong> {{ canva.timer }} sec
           </p>
-          <p class="text-center text-muted mb-2">
-            <strong>Canva modifed</strong> {{ canva.save_count }} time
-        </p>
           <div class="d-flex justify-content-center">
             {% if user.is_authenticated %}
               <a href="{% url 'canva-detail' canva.id %}" class="btn btn-primary btn-lg shadow-lg transition-all">Join</a>

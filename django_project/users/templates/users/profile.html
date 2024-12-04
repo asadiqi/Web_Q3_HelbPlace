@@ -27,20 +27,5 @@
             </form>
         </div>
     </div>
-
-    <div class="mt-5">
-        <h3 class="text-secondary">Contributions</h3>
-        <div class="list-group shadow-sm">
-            {% if user.profile.contributions %}
-                {% for canvas_id, count in user.profile.contributions.items %}
-                    <a href="{% url 'canva-detail' canvas_id %}" class="list-group-item list-group-item-action">
-                        <strong>Canvas {{ canvas_id }}</strong>: {{ count }} contributions
-                    </a>
-                {% endfor %}
-            {% else %}
-                <p class="text-muted">No contributions for the moment</p>
-            {% endif %}
-        </div>
-    </div>
 </div>
 {% endblock content %}

@@ -1,5 +1,9 @@
 from django.contrib import admin
+
+from blog.models import PixelModification
 from .models import Profile
 
-admin.site.register(Profile) # registering the Profile model with the admin interface
+admin.site.register(Profile)
+admin.site.register(PixelModification)
+
 

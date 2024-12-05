@@ -4,6 +4,12 @@
     {% if canva %}
         <div class="container mt-4">
             <h1 class="text-center">Stats for {{ canva.title }}</h1>
+
+            <!-- Display the total number of modifications -->
+            <div class="alert alert-info text-center">
+                <strong>Total Modifications:</strong> {{ total_modifications }}
+            </div>
+
             <div class="table-responsive">
                 <table class="table table-hover table-striped" id="rankingTable">
                     <thead class="table-dark">
@@ -13,20 +19,19 @@
                             <th scope="col">Modification</th>
                         </tr>
                     </thead>
-                        <tbody>
-                            {% for user_ranking in user_rankings %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>
-                                        <a href="{% url 'profile' user_ranking.user__id %}">
-                                            {{ user_ranking.user__username }}
-                                        </a>
-                                    </td>
-                                    <td>{{ user_ranking.modification_count }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-
+                    <tbody>
+                        {% for user_ranking in user_rankings %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <a href="{% url 'profile' user_ranking.user__id %}">
+                                        {{ user_ranking.user__username }}
+                                    </a>
+                                </td>
+                                <td>{{ user_ranking.modification_count }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -36,6 +41,7 @@
         </div>
     {% endif %}
 {% endblock %}
+
 
 <script>
     // JavaScript to add interactivity to the ranking table

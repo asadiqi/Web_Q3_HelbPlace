@@ -159,10 +159,12 @@ def statistic(request):
             .annotate(modification_count=Sum('modification_count')) \
             .order_by('-modification_count')
 
-        return render(request, 'blog/statistic.html', {'canva': canva, 'user_rankings': user_rankings})
+        # Calculer le total des modifications
+        total_modifications = UserAction.objects.filter(canva=canva).aggregate(total=Sum('modification_count'))['total'] or 0
+
+        return render(request, 'blog/statistic.html', {'canva': canva, 'user_rankings': user_rankings, 'total_modifications': total_modifications})
 
     return render(request, 'blog/statistic.html', {'canva': canva})
-
 
 
 

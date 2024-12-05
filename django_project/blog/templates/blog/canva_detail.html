@@ -1,58 +1,85 @@
 {% extends "blog/base.html" %}
+
 {% block content %}
-<article class="media content-section">
-    <img class="rounded-circle article-img" src="{{ object.author.profile.image.url }}">
-    <div class="media-body">
-        <div class="article-metadata">
-            <a class="mr-2" href="#">{{ object.author }}</a>
-            <small class="text-muted">{{ object.date_posted|date:"F d, Y" }}</small>
-            {% if object.author == user %}
-            <div>
-                <a class="btn-secondary btn-sm mt-1 mb-1" href="{% url 'canva-update' object.id %}">Update</a> |
-                <a class="btn-danger btn-sm mt-1 mb-1" href="{% url 'canva-delete' object.id %}">Delete</a>
+    <h2>{{ canva.title }}</h2>
+
+    {% if message %}
+        <div class="alert alert-warning">
+            {{ message }}
+        </div>
+    {% endif %}
+
+
+
+    <div class="canvas-grid">
+        {% for row in pixels %}
+            <div class="pixel-row">
+                {% for pixel in row %}
+                    <div
+                        class="pixel"
+                        style="background-color: {{ pixel.color }};"
+                        data-x="{{ pixel.x }}"
+                        data-y="{{ pixel.y }}">
+                    </div>
+                {% empty %}
+                    <p>No pixels available.</p>
+                {% endfor %}
             </div>
-            {% endif %}
-        </div>
-        <h2 class="article-title">{{ object.title }}</h2>
-        <p class="article-content">Height: {{ object.sizeHeight }}px</p>
-        <p class="article-content">Width: {{ object.sizeWidth }}px</p>
-        <p class="article-content">Timer: {{ object.timer }}sec</p>
+        {% endfor %}
     </div>
-</article>
 
-<div class="canvas-grid">
-    {% for row in pixels %}
-        <div class="pixel-row">
-            {% for pixel in row %}
-                <div 
-                    class="pixel" 
-                    style="background-color: {{ pixel.color }};"
-                    data-x="{{ pixel.x }}"
-                    data-y="{{ pixel.y }}">
+    <div class="modify-grid">
+        <form method="POST" action="{% url 'update-pixel' canva.id %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="x">Column:</label>
+                <input type="number" id="x" name="x" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="y">Row:</label>
+                <input type="number" id="y" name="y" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="color">Color (Hex):</label>
+                <input type="color" id="color" name="color" class="form-control" required>
+            </div>
+
+            {% if time_remaining > 0 %}
+                <div id="countdown-timer">
+                    <p>Please wait <span id="timer">{{ time_remaining }}</span> seconds before modifying again.</p>
                 </div>
-            {% empty %}
-                <p>No pixels available.</p>
-            {% endfor %}
-        </div>
-    {% endfor %}
-</div>
+            {% else %}
+                <p>You can now modify this canva</p>
+            {% endif %}
+            <button type="submit" class="btn btn-success mt-3" id="save-button">Save</button>
+        </form>
+    </div>
 
-<div class="modify-grid">
-    <form method="POST" action="{% url 'update-pixel' object.id %}">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="x">Colonne:</label>
-            <input type="number" id="x" name="x" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="y">Ligne:</label>
-            <input type="number" id="y" name="y" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="color">Couleur (Hex):</label>
-            <input type="color" id="color" name="color" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-success mt-3">Save</button>
-    </form>
-</div>
-{% endblock content %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const timerElement = document.getElementById('timer');
+            const saveButton = document.querySelector('button[type="submit"]');
+
+            let timeRemaining = parseInt(timerElement?.textContent, 10) || 0;
+
+            if (timeRemaining > 0) {
+                saveButton.disabled = true;
+                saveButton.classList.add('disabled');
+            }
+
+            function updateTimer() {
+                if (timeRemaining > 0) {
+                    timeRemaining -= 1;
+                    timerElement.textContent = timeRemaining;
+
+                    if (timeRemaining === 0) {
+                        saveButton.disabled = false;
+                        saveButton.classList.remove('disabled');
+                    }
+                }
+            }
+
+            setInterval(updateTimer, 1000);
+        });
+    </script>
+{% endblock %}

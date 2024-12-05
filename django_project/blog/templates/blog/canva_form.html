@@ -1,36 +1,117 @@
 {% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
 
 {% block content %}
-<div class="container my-5">
-  <div class="row">
-    {% for canva in canvases %}
-    <div class="col-md-4 mb-4">
-      <div class="card shadow-lg border-0 rounded-3">
-        <div class="card-body">
-          <h5 class="card-title text-center text-dark">{{ canva.title }}</h5>
-          <p class="card-text text-muted">
-            {{ canva.content|truncatewords:20 }}
-          </p>
-          <p class="text-center text-muted mb-2">
-            <strong>Dim :</strong> {{ canva.sizeHeight }} x {{ canva.sizeWidth }} pixels
-          </p>
-          <p class="text-center text-muted mb-2">
-            <strong>Waiting Time:</strong> {{ canva.timer }} sec
-          </p>
-          <p class="text-center text-muted mb-2">
-            <strong>Canva modifed</strong> {{ canva.save_count }} time
-        </p>
-          <div class="d-flex justify-content-center">
-            {% if user.is_authenticated %}
-              <a href="{% url 'canva-detail' canva.id %}" class="btn btn-primary btn-lg shadow-lg transition-all">Join</a>
-            {% else %}
-              <button class="btn btn-primary btn-lg" disabled>Join</button>
-            {% endif %}
-          </div>
+<div class="content-section my-5">
+    <form method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4 text-center">Create Canva</legend>
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="id_title">Title</label>
+                    <input type="text" name="title" id="id_title" class="form-control" required>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="id_sizeHeight">Height</label>
+                    <input type="number" name="sizeHeight" id="id_sizeHeight" class="form-control" value="5" min="1" required>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="id_sizeWidth">Width</label>
+                    <input type="number" name="sizeWidth" id="id_sizeWidth" class="form-control" value="5" min="1" required>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="id_timer">Timer (seconds)</label>
+                    <input type="number" name="timer" id="id_timer" class="form-control" value="10" min="0" required>
+                </div>
+            </div>
+            <div id="canvas-grid-container">
+                <h5>Customize Canvas</h5>
+                <div id="canvas-grid" class="canvas-grid"></div>
+            </div>
+        </fieldset>
+        <div class="form-group text-center">
+            <button type="submit" class="btn btn-primary btn-lg shadow-lg transition-all">Save</button>
         </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
+    </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const gridContainer = document.getElementById('canvas-grid');
+        const sizeHeightInput = document.getElementById('id_sizeHeight');
+        const sizeWidthInput = document.getElementById('id_sizeWidth');
+
+        function createGrid() {
+            gridContainer.innerHTML = ''; // Reset grid
+            const rows = parseInt(sizeHeightInput.value, 10) || 1;
+            const cols = parseInt(sizeWidthInput.value, 10) || 1;
+
+            for (let y = 0; y < rows; y++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'pixel-row';
+
+                for (let x = 0; x < cols; x++) {
+                    const input = document.createElement('input');
+                    input.type = 'color';
+                    input.name = `pixel_${x}_${y}`;
+                    input.value = '#FFFFFF';
+                    input.className = 'pixel';
+                    input.dataset.x = x;
+                    input.dataset.y = y;
+
+                    rowDiv.appendChild(input);
+                }
+
+                gridContainer.appendChild(rowDiv);
+            }
+        }
+
+        // Initialize grid on load
+        createGrid();
+
+        // Update grid dynamically when size changes
+        sizeHeightInput.addEventListener('input', createGrid);
+        sizeWidthInput.addEventListener('input', createGrid);
+
+        // Collect pixel data and send as JSON
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function (e) {
+            const pixels = [];
+            document.querySelectorAll('.pixel').forEach(pixel => {
+                pixels.push({
+                    x: parseInt(pixel.dataset.x, 10),
+                    y: parseInt(pixel.dataset.y, 10),
+                    color: pixel.value
+                });
+            });
+
+            const pixelDataInput = document.createElement('input');
+            pixelDataInput.type = 'hidden';
+            pixelDataInput.name = 'pixel_data';
+            pixelDataInput.value = JSON.stringify(pixels);
+
+            form.appendChild(pixelDataInput);
+        });
+    });
+</script>
+
+<style>
+    .canvas-grid {
+        display: flex;
+        flex-direction: column;
+        margin-top: 20px;
+    }
+    .pixel-row {
+        display: flex;
+    }
+    .pixel {
+        width: 25px;
+        height: 25px;
+        margin: 2px;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+    }
+</style>
 {% endblock content %}

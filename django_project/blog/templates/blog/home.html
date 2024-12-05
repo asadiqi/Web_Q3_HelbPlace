@@ -7,17 +7,26 @@
     <div class="col-md-4 mb-4">
       <div class="card shadow-sm">
         <div class="card-body">
+          <!-- Titre -->
           <h5 class="card-title text-center">{{ canva.title }}</h5>
-          <p class="card-text text-muted">
-            {{ canva.content|truncatewords:20 }}
-          </p>
-          <p class="text-center text-muted">
-            {{ canva.sizeHeight }} x {{ canva.sizeWidth }} pixels
-          </p>
-          <p class="text-center text-muted">
-            Waiting Time: {{ canva.timer }} sec
-          </p>
 
+          <!-- Photo de l'auteur et nom -->
+          <div class="text-center mb-2">
+            <img class="rounded-circle" src="{{ canva.author.profile.image.url }}" alt="{{ canva.author }}" style="width: 50px; height: 50px;">
+            <p class="text-muted mb-0">{{ canva.author }}</p>
+          </div>
+
+          <!-- Date de publication -->
+          <p class="text-muted text-center"><small>Posted on {{ canva.date_posted|date:"F d, Y" }}</small></p>
+
+          <!-- Contenu du canva -->
+          <p class="card-text text-muted">{{ canva.content|truncatewords:20 }}</p>
+
+          <!-- Dimensions et temps d'attente -->
+          <p class="text-center text-muted">{{ canva.sizeHeight }} x {{ canva.sizeWidth }} pixels</p>
+          <p class="text-center text-muted">Waiting Time: {{ canva.timer }} sec</p>
+
+          <!-- Bouton "Join" -->
           <div class="d-flex justify-content-center">
             {% if user.is_authenticated %}
               <a href="{% url 'canva-detail' canva.id %}" class="btn btn-primary btn-sm">Join</a>

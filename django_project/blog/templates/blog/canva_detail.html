@@ -1,16 +1,24 @@
 {% extends "blog/base.html" %}
 
 {% block content %}
-    <h2>{{ canva.title }}</h2>
+<div class="container">
+    <!-- Titre du Canva -->
+    <h2 class="mb-4 text-center">{{ canva.title }}</h2>
 
+    <!-- Informations sur l'auteur -->
+    <div class="text-center mb-4">
+        <img class="rounded-circle" src="{{ canva.author.profile.image.url }}" alt="{{ canva.author }}" style="width: 100px; height: 100px;">
+        <p class="mt-2 text-muted">Posted by <strong>{{ canva.author }}</strong> on {{ canva.date_posted|date:"F d, Y" }}</p>
+    </div>
+
+    <!-- Message d'alerte -->
     {% if message %}
         <div class="alert alert-warning">
             {{ message }}
         </div>
     {% endif %}
 
-
-
+    <!-- Grille du Canva -->
     <div class="canvas-grid">
         {% for row in pixels %}
             <div class="pixel-row">
@@ -28,7 +36,8 @@
         {% endfor %}
     </div>
 
-    <div class="modify-grid">
+    <!-- Formulaire de modification -->
+    <div class="modify-grid mt-5">
         <form method="POST" action="{% url 'update-pixel' canva.id %}">
             {% csrf_token %}
             <div class="form-group">
@@ -54,32 +63,33 @@
             <button type="submit" class="btn btn-success mt-3" id="save-button">Save</button>
         </form>
     </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const timerElement = document.getElementById('timer');
-            const saveButton = document.querySelector('button[type="submit"]');
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const timerElement = document.getElementById('timer');
+        const saveButton = document.querySelector('button[type="submit"]');
 
-            let timeRemaining = parseInt(timerElement?.textContent, 10) || 0;
+        let timeRemaining = parseInt(timerElement?.textContent, 10) || 0;
 
+        if (timeRemaining > 0) {
+            saveButton.disabled = true;
+            saveButton.classList.add('disabled');
+        }
+
+        function updateTimer() {
             if (timeRemaining > 0) {
-                saveButton.disabled = true;
-                saveButton.classList.add('disabled');
-            }
+                timeRemaining -= 1;
+                timerElement.textContent = timeRemaining;
 
-            function updateTimer() {
-                if (timeRemaining > 0) {
-                    timeRemaining -= 1;
-                    timerElement.textContent = timeRemaining;
-
-                    if (timeRemaining === 0) {
-                        saveButton.disabled = false;
-                        saveButton.classList.remove('disabled');
-                    }
+                if (timeRemaining === 0) {
+                    saveButton.disabled = false;
+                    saveButton.classList.remove('disabled');
                 }
             }
+        }
 
-            setInterval(updateTimer, 1000);
-        });
-    </script>
+        setInterval(updateTimer, 1000);
+    });
+</script>
 {% endblock %}

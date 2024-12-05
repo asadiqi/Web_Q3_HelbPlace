@@ -4,13 +4,8 @@
     {% if canva %}
         <div class="container mt-4">
             <h1 class="text-center">Stats for {{ canva.title }}</h1>
+        
 
-            <!-- Total Modifications -->
-            <div class="alert alert-info text-center">
-                <strong>Total Modifications:</strong> {{ total_modifications }}
-            </div>
-
-            <!-- User Rankings Table -->
             <div class="table-responsive">
                 <table class="table table-hover table-striped" id="rankingTable">
                     <thead class="table-dark">

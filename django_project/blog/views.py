@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-
-from . import models
+from django.db.models.functions import TruncDate
+from django.db.models import Count
 from .models import Canva, Pixel, UserAction, PixelModification
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -154,10 +154,10 @@ class CanvaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         return self.request.user == self.get_object().author
 
-from django.db.models.functions import TruncDate
-
-from django.db.models.functions import TruncDate
 from django.db.models import Count
+from django.db.models.functions import TruncDate
+from django.utils.timezone import now
+from datetime import timedelta
 
 def statistic(request):
     canva_id = request.GET.get('canva_id')
@@ -171,6 +171,13 @@ def statistic(request):
 
         total_modifications = UserAction.objects.filter(canva=canva).aggregate(total=Sum('modification_count'))['total'] or 0
 
+        # Date de création du Canva jusqu'à aujourd'hui
+        start_date = canva.date_posted.date()  # Date de création du canva
+        end_date = now().date()  # Date actuelle
+
+        # Liste de toutes les dates entre la date de création et la date actuelle
+        date_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+
         # Regrouper les modifications par date
         pixel_modifications_by_date = PixelModification.objects.filter(pixel__canva=canva) \
             .annotate(date=TruncDate('modified_at')) \
@@ -178,11 +185,22 @@ def statistic(request):
             .annotate(total_modifications=Count('id')) \
             .order_by('date')
 
+        # Transformer la liste de modifications par date en un dictionnaire
+        modification_dict = {mod['date']: mod['total_modifications'] for mod in pixel_modifications_by_date}
+
+        # Construire une liste des modifications, en ajoutant 0 pour les dates sans modifications
+        pixel_modifications_with_all_dates = []
+        for date in date_range:
+            pixel_modifications_with_all_dates.append({
+                'date': date,
+                'total_modifications': modification_dict.get(date, 0)  # 0 si aucune modification
+            })
+
         return render(request, 'blog/statistic.html', {
             'canva': canva,
             'user_rankings': user_rankings,
             'total_modifications': total_modifications,
-            'pixel_modifications_by_date': pixel_modifications_by_date,  # Nouveaux ajouts
+            'pixel_modifications_by_date': pixel_modifications_with_all_dates,  # Utiliser la nouvelle liste
         })
 
     return render(request, 'blog/statistic.html', {'canva': canva})

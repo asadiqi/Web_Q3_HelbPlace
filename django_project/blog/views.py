@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Canva, Pixel, UserAction
+from .models import Canva, Pixel, UserAction, PixelModification
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -77,6 +77,9 @@ def update_pixel(request, pk):
                 pixel.color = color
                 pixel.save()
 
+                # Log the modification
+                PixelModification.objects.create(pixel=pixel)
+
                 canva.save()
                 user_action.last_modified = now()
                 user_action.modification_count += 1
@@ -97,6 +100,7 @@ def update_pixel(request, pk):
             'canva': canva,
             'pixels': grid
         })
+
 
 
 class CanvaCreateView(LoginRequiredMixin, CreateView):
@@ -152,21 +156,25 @@ def statistic(request):
     canva_id = request.GET.get('canva_id')
     canva = get_object_or_404(Canva, id=canva_id) if canva_id else None
 
-    # Si un canvas est sélectionné, on récupère les utilisateurs et leur nombre de modifications
     if canva:
         user_rankings = UserAction.objects.filter(canva=canva) \
             .values('user__username', 'user__id') \
             .annotate(modification_count=Sum('modification_count')) \
             .order_by('-modification_count')
 
-        # Calculer le total des modifications
         total_modifications = UserAction.objects.filter(canva=canva).aggregate(total=Sum('modification_count'))['total'] or 0
 
-        return render(request, 'blog/statistic.html', {'canva': canva, 'user_rankings': user_rankings, 'total_modifications': total_modifications})
+        # Ajouter les modifications des pixels dans le contexte
+        pixel_modifications = PixelModification.objects.filter(pixel__canva=canva).select_related('pixel')
+
+        return render(request, 'blog/statistic.html', {
+            'canva': canva,
+            'user_rankings': user_rankings,
+            'total_modifications': total_modifications,
+            'pixel_modifications': pixel_modifications,  # Nouveaux ajouts
+        })
 
     return render(request, 'blog/statistic.html', {'canva': canva})
-
-
 
 
 def user_profile(request, user_id):

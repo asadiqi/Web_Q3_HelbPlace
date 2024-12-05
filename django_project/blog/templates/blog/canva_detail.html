@@ -11,12 +11,11 @@
         <p class="mt-2 text-muted">Posted by <strong>{{ canva.author }}</strong> on {{ canva.date_posted|date:"F d, Y" }}</p>
     </div>
 
-    <!-- Message d'alerte -->
-    {% if message %}
-        <div class="alert alert-warning">
-            {{ message }}
-        </div>
-    {% endif %}
+<!-- Bouton pour accéder à la page des statistiques -->
+<div class="text-center mt-4">
+    <a href="{% url 'blog-statistic' %}" class="btn btn-primary">View Statistics</a>
+</div>
+
 
     <!-- Grille du Canva -->
     <div class="canvas-grid">

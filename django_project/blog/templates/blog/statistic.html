@@ -4,7 +4,8 @@
     {% if canva %}
         <div class="container mt-4">
             <h1 class="text-center">Stats for {{ canva.title }}</h1>
-        
+
+
 
             <div class="table-responsive">
                 <table class="table table-hover table-striped" id="rankingTable">
@@ -29,6 +30,10 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+        <div class="text-center my-4">
+                <img src="data:image/png;base64,{{ chart }}" alt="Pixel Modifications Chart" class="img-fluid">
             </div>
 
             <!-- Pixel Modifications Table -->

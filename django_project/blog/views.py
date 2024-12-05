@@ -159,6 +159,21 @@ from django.db.models.functions import TruncDate
 from django.utils.timezone import now
 from datetime import timedelta
 
+import matplotlib.pyplot as plt
+import io
+import base64
+
+import matplotlib.pyplot as plt
+import io
+import base64
+from matplotlib.dates import DateFormatter
+
+import matplotlib.pyplot as plt
+import io
+import base64
+from matplotlib.dates import DateFormatter
+from matplotlib.ticker import MaxNLocator
+
 def statistic(request):
     canva_id = request.GET.get('canva_id')
     canva = get_object_or_404(Canva, id=canva_id) if canva_id else None
@@ -171,40 +186,68 @@ def statistic(request):
 
         total_modifications = UserAction.objects.filter(canva=canva).aggregate(total=Sum('modification_count'))['total'] or 0
 
-        # Date de création du Canva jusqu'à aujourd'hui
-        start_date = canva.date_posted.date()  # Date de création du canva
-        end_date = now().date()  # Date actuelle
-
-        # Liste de toutes les dates entre la date de création et la date actuelle
+        start_date = canva.date_posted.date()
+        end_date = now().date()
         date_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
 
-        # Regrouper les modifications par date
         pixel_modifications_by_date = PixelModification.objects.filter(pixel__canva=canva) \
             .annotate(date=TruncDate('modified_at')) \
             .values('date') \
             .annotate(total_modifications=Count('id')) \
             .order_by('date')
 
-        # Transformer la liste de modifications par date en un dictionnaire
         modification_dict = {mod['date']: mod['total_modifications'] for mod in pixel_modifications_by_date}
 
-        # Construire une liste des modifications, en ajoutant 0 pour les dates sans modifications
         pixel_modifications_with_all_dates = []
         for date in date_range:
             pixel_modifications_with_all_dates.append({
                 'date': date,
-                'total_modifications': modification_dict.get(date, 0)  # 0 si aucune modification
+                'total_modifications': modification_dict.get(date, 0)
             })
+
+        # Préparer les données pour le graphique
+        dates = [item['date'] for item in pixel_modifications_with_all_dates]
+        modifications = [item['total_modifications'] for item in pixel_modifications_with_all_dates]
+
+        # Supprimer les doublons dans les dates (en gardant seulement la première occurrence)
+        unique_dates = []
+        unique_modifications = []
+        for i in range(len(dates)):
+            if i == 0 or dates[i] != dates[i-1]:
+                unique_dates.append(dates[i])
+                unique_modifications.append(modifications[i])
+
+        # Générer le graphique
+        plt.figure(figsize=(10, 5))
+        plt.plot(unique_dates, unique_modifications, marker='o', color='b')
+        plt.title(f"Pixel Modifications for {canva.title}", fontsize=16)
+        plt.xlabel("Date", fontsize=12)
+        plt.ylabel("Total Modifications", fontsize=12)
+
+        # Formater les dates sur l'axe X
+        plt.gca().xaxis.set_major_formatter(DateFormatter('%Y-%m-%d'))  # Format de la date (année-mois-jour)
+        plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))  # Gérer les ticks de manière appropriée
+        plt.xticks(rotation=45)  # Faire pivoter les dates pour éviter qu'elles ne se chevauchent
+
+        plt.grid(True)
+        plt.tight_layout()
+
+        # Sauvegarder l'image dans un buffer
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
+        image_base64 = base64.b64encode(buffer.getvalue()).decode()
+        buffer.close()
 
         return render(request, 'blog/statistic.html', {
             'canva': canva,
             'user_rankings': user_rankings,
             'total_modifications': total_modifications,
-            'pixel_modifications_by_date': pixel_modifications_with_all_dates,  # Utiliser la nouvelle liste
+            'pixel_modifications_by_date': pixel_modifications_with_all_dates,
+            'chart': image_base64,  # Ajouter le graphique encodé
         })
 
     return render(request, 'blog/statistic.html', {'canva': canva})
-
 
 
 def user_profile(request, user_id):

@@ -1,5 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+
+from . import models
 from .models import Canva, Pixel, UserAction, PixelModification
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -152,6 +154,11 @@ class CanvaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         return self.request.user == self.get_object().author
 
+from django.db.models.functions import TruncDate
+
+from django.db.models.functions import TruncDate
+from django.db.models import Count
+
 def statistic(request):
     canva_id = request.GET.get('canva_id')
     canva = get_object_or_404(Canva, id=canva_id) if canva_id else None
@@ -164,17 +171,22 @@ def statistic(request):
 
         total_modifications = UserAction.objects.filter(canva=canva).aggregate(total=Sum('modification_count'))['total'] or 0
 
-        # Ajouter les modifications des pixels dans le contexte
-        pixel_modifications = PixelModification.objects.filter(pixel__canva=canva).select_related('pixel')
+        # Regrouper les modifications par date
+        pixel_modifications_by_date = PixelModification.objects.filter(pixel__canva=canva) \
+            .annotate(date=TruncDate('modified_at')) \
+            .values('date') \
+            .annotate(total_modifications=Count('id')) \
+            .order_by('date')
 
         return render(request, 'blog/statistic.html', {
             'canva': canva,
             'user_rankings': user_rankings,
             'total_modifications': total_modifications,
-            'pixel_modifications': pixel_modifications,  # Nouveaux ajouts
+            'pixel_modifications_by_date': pixel_modifications_by_date,  # Nouveaux ajouts
         })
 
     return render(request, 'blog/statistic.html', {'canva': canva})
+
 
 
 def user_profile(request, user_id):

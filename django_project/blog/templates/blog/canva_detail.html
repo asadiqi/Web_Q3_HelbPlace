@@ -27,7 +27,8 @@
                         class="pixel"
                         style="background-color: {{ pixel.color }};"
                         data-x="{{ pixel.x }}"
-                        data-y="{{ pixel.y }}">
+                        data-y="{{ pixel.y }}"
+                        onclick="selectPixel(event)">
                     </div>
                 {% empty %}
                     <p>No pixels available.</p>
@@ -38,15 +39,15 @@
 
     <!-- Formulaire de modification -->
     <div class="modify-grid mt-5">
-        <form method="POST" action="{% url 'update-pixel' canva.id %}">
+        <form method="POST" action="{% url 'update-pixel' canva.id %}" id="pixel-form">
             {% csrf_token %}
             <div class="form-group">
                 <label for="x">Column:</label>
-                <input type="number" id="x" name="x" class="form-control" required>
+                <input type="number" id="x" name="x" class="form-control" required >
             </div>
             <div class="form-group">
                 <label for="y">Row:</label>
-                <input type="number" id="y" name="y" class="form-control" required>
+                <input type="number" id="y" name="y" class="form-control" required >
             </div>
             <div class="form-group">
                 <label for="color">Color (Hex):</label>
@@ -91,5 +92,30 @@
 
         setInterval(updateTimer, 1000);
     });
+
+    // Fonction pour sélectionner un pixel et modifier sa couleur
+    function selectPixel(event) {
+        const pixel = event.target;
+        const x = pixel.getAttribute('data-x');
+        const y = pixel.getAttribute('data-y');
+        const colorInput = document.getElementById('color');
+        const xInput = document.getElementById('x');
+        const yInput = document.getElementById('y');
+
+        // Remplir les champs du formulaire avec les coordonnées et la couleur actuelle
+        xInput.value = x;
+        yInput.value = y;
+        colorInput.value = rgbToHex(pixel.style.backgroundColor);  // Convertir couleur RGB en Hex
+    }
+
+    // Fonction pour convertir la couleur RGB en format Hex
+    function rgbToHex(rgb) {
+        let result;
+        if (rgb) {
+            const rgbArray = rgb.match(/^rgb\((\d+), (\d+), (\d+)\)$/);
+            result = `#${(1 << 24) | (parseInt(rgbArray[1]) << 16) | (parseInt(rgbArray[2]) << 8) | parseInt(rgbArray[3]).toString(16).slice(1)}`;
+        }
+        return result || '#FFFFFF';
+    }
 </script>
 {% endblock %}

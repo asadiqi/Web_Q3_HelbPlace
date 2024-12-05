@@ -10,5 +10,14 @@
       <jdbc-url>jdbc:sqlite:C:\Users\Claud\Documents\GitHub\Web_Q3_HelbPlace\django_project\db.sqlite3</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="Django default" uuid="e1787fb8-dde1-41be-a927-68036a1e7481">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <imported>true</imported>
+      <remarks>$PROJECT_DIR$/django_project/settings.py</remarks>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\Claud\Documents\GitHub\Web_Q3_HelbPlace\django_project\db.sqlite3</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

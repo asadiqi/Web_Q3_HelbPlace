@@ -1,0 +1,32 @@
+{% extends "blog/base.html" %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Profile of {{ profile_user.username }}</h2>
+        <p>Email: {{ profile_user.email }}</p>
+        
+        <h3>Canvas Participation</h3>
+        {% if canvas_participation %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Canvas</th>
+                        <th>Total Modifications</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for canvas in canvas_participation %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'canva-detail' canvas.canva__id %}">{{ canvas.canva__title }}</a>
+                            </td>
+                            <td>{{ canvas.total_modifications }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No canvas participation found.</p>
+        {% endif %}
+    </div>
+{% endblock %}

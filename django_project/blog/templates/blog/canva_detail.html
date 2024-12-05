@@ -11,10 +11,9 @@
         <p class="mt-2 text-muted">Posted by <strong>{{ canva.author }}</strong> on {{ canva.date_posted|date:"F d, Y" }}</p>
     </div>
 
-<!-- Bouton pour accéder à la page des statistiques -->
-<div class="text-center mt-4">
-    <a href="{% url 'blog-statistic' %}" class="btn btn-primary">View Statistics</a>
-</div>
+    <div class="statistic-button">
+        <a href="{% url 'blog-statistic' %}?canva_id={{ canva.id }}" class="btn btn-primary">Statistics</a>
+    </div>
 
 
     <!-- Grille du Canva -->
@@ -65,56 +64,72 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const timerElement = document.getElementById('timer');
-        const saveButton = document.querySelector('button[type="submit"]');
+  <script>
+      document.addEventListener('DOMContentLoaded', function () {
+          const timerElement = document.getElementById('timer');
+          const saveButton = document.querySelector('button[type="submit"]');
+          let timeRemaining = parseInt(timerElement?.textContent, 10) || 0;
+          let clickedPixel = null;
 
-        let timeRemaining = parseInt(timerElement?.textContent, 10) || 0;
+          if (timeRemaining > 0) {
+              saveButton.disabled = true;
+              saveButton.classList.add('disabled');
+          }
 
-        if (timeRemaining > 0) {
-            saveButton.disabled = true;
-            saveButton.classList.add('disabled');
-        }
+          function updateTimer() {
+              if (timeRemaining > 0) {
+                  timeRemaining -= 1;
+                  timerElement.textContent = timeRemaining;
 
-        function updateTimer() {
-            if (timeRemaining > 0) {
-                timeRemaining -= 1;
-                timerElement.textContent = timeRemaining;
+                  if (timeRemaining === 0) {
+                      saveButton.disabled = false;
+                      saveButton.classList.remove('disabled');
+                  }
+              }
+          }
 
-                if (timeRemaining === 0) {
-                    saveButton.disabled = false;
-                    saveButton.classList.remove('disabled');
-                }
-            }
-        }
+          setInterval(updateTimer, 1000);
 
-        setInterval(updateTimer, 1000);
-    });
+          const pixels = document.querySelectorAll('.pixel');
 
-    // Fonction pour sélectionner un pixel et modifier sa couleur
-    function selectPixel(event) {
-        const pixel = event.target;
-        const x = pixel.getAttribute('data-x');
-        const y = pixel.getAttribute('data-y');
-        const colorInput = document.getElementById('color');
-        const xInput = document.getElementById('x');
-        const yInput = document.getElementById('y');
+          pixels.forEach(pixel => {
+              pixel.addEventListener('click', function () {
+                  if (clickedPixel) {
+                      return;
+                  }
 
-        // Remplir les champs du formulaire avec les coordonnées et la couleur actuelle
-        xInput.value = x;
-        yInput.value = y;
-        colorInput.value = rgbToHex(pixel.style.backgroundColor);  // Convertir couleur RGB en Hex
-    }
+                  const x = this.dataset.x;
+                  const y = this.dataset.y;
 
-    // Fonction pour convertir la couleur RGB en format Hex
-    function rgbToHex(rgb) {
-        let result;
-        if (rgb) {
-            const rgbArray = rgb.match(/^rgb\((\d+), (\d+), (\d+)\)$/);
-            result = `#${(1 << 24) | (parseInt(rgbArray[1]) << 16) | (parseInt(rgbArray[2]) << 8) | parseInt(rgbArray[3]).toString(16).slice(1)}`;
-        }
-        return result || '#FFFFFF';
-    }
-</script>
+                  document.getElementById('x').value = x;
+                  document.getElementById('y').value = y;
+
+                  pixels.forEach(p => {
+                      if (p !== this) {
+                          p.style.pointerEvents = 'none';
+                      }
+                  });
+
+                  clickedPixel = this;
+
+                  const colorInput = document.getElementById('color');
+                  this.style.backgroundColor = colorInput.value;
+              });
+          });
+
+          document.getElementById('modify-pixel-form').addEventListener('submit', function (e) {
+              if (!clickedPixel) {
+                  e.preventDefault();  // Prevent form submission
+                  alert('Please select a pixel to modify.');
+              } else {
+                  // Allow form submission and reset pointer events
+                  pixels.forEach(p => {
+                      p.style.pointerEvents = 'auto';
+                  });
+                  clickedPixel = null;
+              }
+          });
+      });
+  </script>
+
 {% endblock %}

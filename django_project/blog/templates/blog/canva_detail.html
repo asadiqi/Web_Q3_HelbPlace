@@ -13,6 +13,28 @@
         <a href="{% url 'blog-statistic' %}?canva_id={{ canva.id }}" class="btn btn-primary">Statistics</a>
     </div>
 
+      <div class="modify-grid">
+      <form method="POST" action="{% url 'update-pixel' canva.id %}" id="modify-pixel-form">
+          {% csrf_token %}
+          <input type="hidden" id="x" name="x">
+          <input type="hidden" id="y" name="y">
+          <div class="form-group">
+              <label for="color">Color (Hex):</label>
+              <input type="color" id="color" name="color" class="form-control" required>
+          </div>
+
+          {% if time_remaining > 0 %}
+              <div id="countdown-timer">
+                  <p>Please wait <span id="timer">{{ time_remaining }}</span> seconds before modifying again.</p>
+              </div>
+          {% else %}
+              <p>You can now modify this canva</p>
+          {% endif %}
+          <button type="submit" class="btn btn-success mt-3" id="save-button">Save</button>
+      </form>
+  </div>
+
+
 <div class="scrollable-canvas">
     <div class="canvas-grid2">
         {% for row in pixels %}
@@ -33,26 +55,6 @@
 </div>
 
 
-  <div class="modify-grid">
-      <form method="POST" action="{% url 'update-pixel' canva.id %}" id="modify-pixel-form">
-          {% csrf_token %}
-          <input type="hidden" id="x" name="x">
-          <input type="hidden" id="y" name="y">
-          <div class="form-group">
-              <label for="color">Color (Hex):</label>
-              <input type="color" id="color" name="color" class="form-control" required>
-          </div>
-
-          {% if time_remaining > 0 %}
-              <div id="countdown-timer">
-                  <p>Please wait <span id="timer">{{ time_remaining }}</span> seconds before modifying again.</p>
-              </div>
-          {% else %}
-              <p>You can now modify this canva</p>
-          {% endif %}
-          <button type="submit" class="btn btn-success mt-3" id="save-button">Save</button>
-      </form>
-  </div>
 
   <script>
       document.addEventListener('DOMContentLoaded', function () {

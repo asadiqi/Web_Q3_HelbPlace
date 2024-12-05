@@ -125,7 +125,8 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 MEDIA_ROOT =  os.path.join(BASE_DIR ,'media') # this is the directory where media files will be stored
 MEDIA_URL = '/media/' # this is the URL where media files will be accessible from the frontend
- 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000  # For huge creation of canva
+
 
 
 # Default primary key field type

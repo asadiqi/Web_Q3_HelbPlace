@@ -212,7 +212,7 @@ def statistic(request):
         # Generate the plot
         plt.figure(figsize=(10, 5))
         plt.plot(unique_dates, unique_modifications, marker='o', color='b')
-        plt.title(f"The evolution of the Canva {canva.title}", fontsize=16)
+        plt.title(f"The evolution of the Canva : {canva.title}", fontsize=16)
         plt.xlabel("Date since graphic was created", fontsize=12)
         plt.ylabel("Total Modifications by day", fontsize=12)
         plt.gca().xaxis.set_major_formatter(DateFormatter('%Y-%m-%d'))

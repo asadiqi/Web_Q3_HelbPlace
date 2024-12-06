@@ -21,6 +21,9 @@
 
           <!-- Contenu du canva -->
           <p class="card-text text-muted">{{ canva.content|truncatewords:20 }}</p>
+          <!-- Total des modifications -->
+          <p class="text-center text-muted">Total Modifications: {{ canva.total_modifications }}</p>
+
 
           <!-- Dimensions et temps d'attente -->
           <p class="text-center text-muted">{{ canva.sizeHeight }} x {{ canva.sizeWidth }} pixels</p>

@@ -17,16 +17,7 @@ def home(request):
         total_modifications=Sum('useraction__modification_count')
     ).order_by('-total_modifications')
 
-    # Préparer la grille pour l'affichage
-    for canva in canvases:
-        pixels = canva.pixels.all()
-        grid = [[None for _ in range(canva.sizeWidth)] for _ in range(canva.sizeHeight)]
-        for pixel in pixels:
-            grid[pixel.y][pixel.x] = pixel
-        canva.grid = grid  # Ajout de la grille au contexte de chaque canva
-
     return render(request, 'blog/home.html', {'canvases': canvases})
-
 
 class CanvaListView(ListView):
     model = Canva

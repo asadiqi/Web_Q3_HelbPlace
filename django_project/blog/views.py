@@ -8,13 +8,15 @@ from django.contrib.auth.decorators import login_required
 import json
 from django.utils.timezone import now
 from datetime import timedelta
-from django.db.models import Sum
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncDate
 from django.contrib.auth.models import User
-from django.db.models import Sum
-from django.db.models.functions import TruncDate
-from django.db.models.functions import TruncDate
-from django.db.models import Count
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
 
+
+# Home view
 def home(request):
     canvases = Canva.objects.annotate(
         total_modifications=Sum('useraction__modification_count')
@@ -22,12 +24,15 @@ def home(request):
 
     return render(request, 'blog/home.html', {'canvases': canvases})
 
+
+# Canva list view
 class CanvaListView(ListView):
     model = Canva
     template_name = 'blog/home.html'
     context_object_name = 'canvases'
 
 
+# Canva detail view
 class CanvaDetailView(DetailView):
     model = Canva
 
@@ -50,6 +55,7 @@ class CanvaDetailView(DetailView):
         return context
 
 
+# Update pixel view
 @login_required
 def update_pixel(request, pk):
     canva = get_object_or_404(Canva, pk=pk)
@@ -96,6 +102,7 @@ def update_pixel(request, pk):
         })
 
 
+# Canva creation view
 class CanvaCreateView(LoginRequiredMixin, CreateView):
     model = Canva
     fields = ['title', 'sizeHeight', 'sizeWidth', 'timer']
@@ -126,6 +133,7 @@ class CanvaCreateView(LoginRequiredMixin, CreateView):
         return response
 
 
+# Canva update view
 class CanvaUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Canva
     fields = ['title', 'sizeHeight', 'sizeWidth', 'timer']
@@ -138,6 +146,7 @@ class CanvaUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user == self.get_object().author
 
 
+# Canva delete view
 class CanvaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Canva
     success_url = '/'
@@ -145,10 +154,8 @@ class CanvaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         return self.request.user == self.get_object().author
 
-import matplotlib.pyplot as plt
-from io import BytesIO
-import base64
 
+# Statistics view
 def statistic(request):
     canva_id = request.GET.get('canva_id')
     canva = get_object_or_404(Canva, id=canva_id) if canva_id else None
@@ -161,44 +168,54 @@ def statistic(request):
 
         total_modifications = UserAction.objects.filter(canva=canva).aggregate(total=Sum('modification_count'))['total'] or 0
 
-        # Date de création du Canva jusqu'à aujourd'hui
-        start_date = canva.date_posted.date()  # Date de création du canva
-        end_date = now().date()  # Date actuelle
+        # Creation date of the Canva to today
+        start_date = canva.date_posted.date()  # Canva creation date
+        end_date = now().date()  # Current date
 
-        # Liste de toutes les dates entre la date de création et la date actuelle
-        date_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+        # If the start and end date are the same, we only show today's date in the graph
+        if start_date == end_date:
+            date_range = [end_date]
+        else:
+            # List of all dates between creation date and today
+            date_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
 
-        # Regrouper les modifications par date
+        # Group modifications by date
         pixel_modifications_by_date = PixelModification.objects.filter(pixel__canva=canva) \
             .annotate(date=TruncDate('modified_at')) \
             .values('date') \
             .annotate(total_modifications=Count('id')) \
             .order_by('date')
 
-        # Transformer la liste de modifications par date en un dictionnaire
+        # Transform the list of modifications by date into a dictionary
         modification_dict = {mod['date']: mod['total_modifications'] for mod in pixel_modifications_by_date}
 
-        # Construire une liste des modifications, en ajoutant 0 pour les dates sans modifications
+        # Build a list of modifications, adding 0 for dates without modifications
         pixel_modifications_with_all_dates = []
         for date in date_range:
             pixel_modifications_with_all_dates.append({
                 'date': date,
-                'total_modifications': modification_dict.get(date, 0)  # 0 si aucune modification
+                'total_modifications': modification_dict.get(date, 0)  # 0 if no modifications
             })
 
-        # Générer le graphique
+        # Generate the plot
         dates = [mod['date'] for mod in pixel_modifications_with_all_dates]
         modifications = [mod['total_modifications'] for mod in pixel_modifications_with_all_dates]
 
         plt.figure(figsize=(10, 6))
         plt.plot(dates, modifications, marker='o', color='b', linestyle='-', linewidth=2, markersize=6)
-        plt.title(f"Modifications de Pixels pour {canva.title}")
+        plt.title(f"Pixel Modifications for {canva.title}")
         plt.xlabel('Date')
         plt.ylabel('Total Modifications')
-        plt.xticks(rotation=45)
+
+        # Ensure only today's date is shown on the x-axis if it's the only date
+        if len(dates) == 1:
+            plt.xticks(dates, rotation=45)  # Show only today's date
+        else:
+            plt.xticks(rotation=45)
+
         plt.tight_layout()
 
-        # Convertir le graphique en image
+        # Convert the plot to an image
         buf = BytesIO()
         plt.savefig(buf, format='png')
         buf.seek(0)
@@ -209,26 +226,24 @@ def statistic(request):
             'canva': canva,
             'user_rankings': user_rankings,
             'total_modifications': total_modifications,
-            'pixel_modifications_by_date': pixel_modifications_with_all_dates,  # Utiliser la nouvelle liste
-            'graph_data': graph_data,  # Passer l'image du graphique
+            'pixel_modifications_by_date': pixel_modifications_with_all_dates,  # Use the updated list
+            'graph_data': graph_data,  # Pass the graph image
         })
 
     return render(request, 'blog/statistic.html', {'canva': canva})
 
+
+# User profile view
 def user_profile(request, user_id):
     user = get_object_or_404(User, id=user_id)
-    
-    # Récupérer les canvas où l'utilisateur a participé et leur modification count
+
+    # Get canvases the user participated in
     canvas_participation = UserAction.objects.filter(user=user) \
         .values('canva__title', 'canva__id') \
         .annotate(total_modifications=Sum('modification_count')) \
         .order_by('-total_modifications')
-    
+
     return render(request, 'blog/profile.html', {
         'profile_user': user,
         'canvas_participation': canvas_participation,
     })
-
-
-
-

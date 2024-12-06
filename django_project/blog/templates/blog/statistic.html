@@ -13,20 +13,19 @@
                             <th scope="col">Modification</th>
                         </tr>
                     </thead>
-                        <tbody>
-                            {% for user_ranking in user_rankings %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>
-                                        <a href="{% url 'profile' user_ranking.user__id %}">
-                                            {{ user_ranking.user__username }}
-                                        </a>
-                                    </td>
-                                    <td>{{ user_ranking.modification_count }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-
+                    <tbody>
+                        {% for user_ranking in user_rankings %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <a href="{% url 'profile' user_ranking.user__id %}">
+                                        {{ user_ranking.user__username }}
+                                    </a>
+                                </td>
+                                <td>{{ user_ranking.modification_count }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -60,10 +59,10 @@
             </tbody>
         </table>
     </div>
+
     <div class="text-center mb-4">
         <img src="data:image/png;base64,{{ graph_data }}" alt="Modifications Graph" />
     </div>  
-    
 {% endblock %}
 
 <script>

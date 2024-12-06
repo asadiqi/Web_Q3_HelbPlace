@@ -43,7 +43,7 @@
         const sizeWidthInput = document.getElementById('id_sizeWidth');
 
         function createGrid() {
-            gridContainer.innerHTML = ''; // Reset grid
+            gridContainer.innerHTML = '';
             const rows = parseInt(sizeHeightInput.value, 10) || 1;
             const cols = parseInt(sizeWidthInput.value, 10) || 1;
 
@@ -67,14 +67,11 @@
             }
         }
 
-        // Initialize grid on load
         createGrid();
 
-        // Update grid dynamically when size changes
         sizeHeightInput.addEventListener('input', createGrid);
         sizeWidthInput.addEventListener('input', createGrid);
 
-        // Collect pixel data and send as JSON
         const form = document.querySelector('form');
         form.addEventListener('submit', function (e) {
             const pixels = [];
@@ -114,4 +111,4 @@
         padding: 0;
     }
 </style>
-{% endblock content %}
+{% endblock %}

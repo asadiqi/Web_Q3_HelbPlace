@@ -128,7 +128,6 @@ MEDIA_URL = '/media/' # this is the URL where media files will be accessible fro
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000  # For huge creation of canva
 
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

@@ -7,6 +7,7 @@
     <div class="col-md-4 mb-4">
       <div class="card shadow-sm">
         <div class="card-body">
+          
           <!-- Titre -->
           <h5 class="card-title text-center">{{ canva.title }}</h5>
 
@@ -21,9 +22,9 @@
 
           <!-- Contenu du canva -->
           <p class="card-text text-muted">{{ canva.content|truncatewords:20 }}</p>
+
           <!-- Total des modifications -->
           <p class="text-center text-muted">Total Modifications: {{ canva.total_modifications }}</p>
-
 
           <!-- Dimensions et temps d'attente -->
           <p class="text-center text-muted">{{ canva.sizeHeight }} x {{ canva.sizeWidth }} pixels</p>
@@ -43,4 +44,4 @@
     {% endfor %}
   </div>
 </div>
-{% endblock content %}
+{% endblock %}

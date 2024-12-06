@@ -2,10 +2,8 @@
 
 {% block content %}
 <div class="container">
-    <!-- Titre du Canva -->
     <h2 class="mb-4 text-center">{{ canva.title }}</h2>
 
-    <!-- Informations sur l'auteur -->
     <div class="text-center mb-4">
         <img class="rounded-circle" src="{{ canva.author.profile.image.url }}" alt="{{ canva.author }}" style="width: 100px; height: 100px;">
         <p class="mt-2 text-muted">Posted by <strong>{{ canva.author }}</strong> on {{ canva.date_posted|date:"F d, Y" }}</p>
@@ -15,18 +13,11 @@
         <a href="{% url 'blog-statistic' %}?canva_id={{ canva.id }}" class="btn btn-primary">Statistics</a>
     </div>
 
-
-    <!-- Grille du Canva -->
     <div class="canvas-grid">
         {% for row in pixels %}
             <div class="pixel-row">
                 {% for pixel in row %}
-                    <div
-                        class="pixel"
-                        style="background-color: {{ pixel.color }};"
-                        data-x="{{ pixel.x }}"
-                        data-y="{{ pixel.y }}"
-                        onclick="selectPixel(event)">
+                    <div class="pixel" style="background-color: {{ pixel.color }};" data-x="{{ pixel.x }}" data-y="{{ pixel.y }}" onclick="selectPixel(event)">
                     </div>
                 {% empty %}
                     <p>No pixels available.</p>
@@ -35,17 +26,16 @@
         {% endfor %}
     </div>
 
-    <!-- Formulaire de modification -->
     <div class="modify-grid mt-5">
         <form method="POST" action="{% url 'update-pixel' canva.id %}" id="pixel-form">
             {% csrf_token %}
             <div class="form-group">
                 <label for="x">Column:</label>
-                <input type="number" id="x" name="x" class="form-control" required >
+                <input type="number" id="x" name="x" class="form-control" required>
             </div>
             <div class="form-group">
                 <label for="y">Row:</label>
-                <input type="number" id="y" name="y" class="form-control" required >
+                <input type="number" id="y" name="y" class="form-control" required>
             </div>
             <div class="form-group">
                 <label for="color">Color (Hex):</label>
@@ -64,72 +54,71 @@
     </div>
 </div>
 
-  <script>
-      document.addEventListener('DOMContentLoaded', function () {
-          const timerElement = document.getElementById('timer');
-          const saveButton = document.querySelector('button[type="submit"]');
-          let timeRemaining = parseInt(timerElement?.textContent, 10) || 0;
-          let clickedPixel = null;
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const timerElement = document.getElementById('timer');
+        const saveButton = document.querySelector('button[type="submit"]');
+        let timeRemaining = parseInt(timerElement?.textContent, 10) || 0;
+        let clickedPixel = null;
 
-          if (timeRemaining > 0) {
-              saveButton.disabled = true;
-              saveButton.classList.add('disabled');
-          }
+        if (timeRemaining > 0) {
+            saveButton.disabled = true;
+            saveButton.classList.add('disabled');
+        }
 
-          function updateTimer() {
-              if (timeRemaining > 0) {
-                  timeRemaining -= 1;
-                  timerElement.textContent = timeRemaining;
+        function updateTimer() {
+            if (timeRemaining > 0) {
+                timeRemaining -= 1;
+                timerElement.textContent = timeRemaining;
 
-                  if (timeRemaining === 0) {
-                      saveButton.disabled = false;
-                      saveButton.classList.remove('disabled');
-                  }
-              }
-          }
+                if (timeRemaining === 0) {
+                    saveButton.disabled = false;
+                    saveButton.classList.remove('disabled');
+                }
+            }
+        }
 
-          setInterval(updateTimer, 1000);
+        setInterval(updateTimer, 1000);
 
-          const pixels = document.querySelectorAll('.pixel');
+        const pixels = document.querySelectorAll('.pixel');
 
-          pixels.forEach(pixel => {
-              pixel.addEventListener('click', function () {
-                  if (clickedPixel) {
-                      return;
-                  }
+        pixels.forEach(pixel => {
+            pixel.addEventListener('click', function () {
+                if (clickedPixel) {
+                    return;
+                }
 
-                  const x = this.dataset.x;
-                  const y = this.dataset.y;
+                const x = this.dataset.x;
+                const y = this.dataset.y;
 
-                  document.getElementById('x').value = x;
-                  document.getElementById('y').value = y;
+                document.getElementById('x').value = x;
+                document.getElementById('y').value = y;
 
-                  pixels.forEach(p => {
-                      if (p !== this) {
-                          p.style.pointerEvents = 'none';
-                      }
-                  });
+                pixels.forEach(p => {
+                    if (p !== this) {
+                        p.style.pointerEvents = 'none';
+                    }
+                });
 
-                  clickedPixel = this;
+                clickedPixel = this;
 
-                  const colorInput = document.getElementById('color');
-                  this.style.backgroundColor = colorInput.value;
-              });
-          });
+                const colorInput = document.getElementById('color');
+                this.style.backgroundColor = colorInput.value;
+            });
+        });
 
-          document.getElementById('modify-pixel-form').addEventListener('submit', function (e) {
-              if (!clickedPixel) {
-                  e.preventDefault();  // Prevent form submission
-                  alert('Please select a pixel to modify.');
-              } else {
-                  // Allow form submission and reset pointer events
-                  pixels.forEach(p => {
-                      p.style.pointerEvents = 'auto';
-                  });
-                  clickedPixel = null;
-              }
-          });
-      });
-  </script>
+        document.getElementById('modify-pixel-form').addEventListener('submit', function (e) {
+            if (!clickedPixel) {
+                e.preventDefault();
+                alert('Please select a pixel to modify.');
+            } else {
+                pixels.forEach(p => {
+                    p.style.pointerEvents = 'auto';
+                });
+                clickedPixel = null;
+            }
+        });
+    });
+</script>
 
 {% endblock %}

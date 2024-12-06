@@ -145,17 +145,19 @@ class CanvaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         return self.request.user == self.get_object().author
 
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
+
 def statistic(request):
     canva_id = request.GET.get('canva_id')
     canva = get_object_or_404(Canva, id=canva_id) if canva_id else None
 
-
     if canva:
         user_rankings = UserAction.objects.filter(canva=canva) \
-        .values('user__username', 'user__id') \
-        .annotate(modification_count=Sum('modification_count')) \
-        .order_by('-modification_count')
-
+            .values('user__username', 'user__id') \
+            .annotate(modification_count=Sum('modification_count')) \
+            .order_by('-modification_count')
 
         total_modifications = UserAction.objects.filter(canva=canva).aggregate(total=Sum('modification_count'))['total'] or 0
 
@@ -184,11 +186,31 @@ def statistic(request):
                 'total_modifications': modification_dict.get(date, 0)  # 0 si aucune modification
             })
 
+        # Générer le graphique
+        dates = [mod['date'] for mod in pixel_modifications_with_all_dates]
+        modifications = [mod['total_modifications'] for mod in pixel_modifications_with_all_dates]
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(dates, modifications, marker='o', color='b', linestyle='-', linewidth=2, markersize=6)
+        plt.title(f"Modifications de Pixels pour {canva.title}")
+        plt.xlabel('Date')
+        plt.ylabel('Total Modifications')
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+
+        # Convertir le graphique en image
+        buf = BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+        graph_data = base64.b64encode(buf.read()).decode('utf-8')
+        buf.close()
+
         return render(request, 'blog/statistic.html', {
             'canva': canva,
             'user_rankings': user_rankings,
             'total_modifications': total_modifications,
             'pixel_modifications_by_date': pixel_modifications_with_all_dates,  # Utiliser la nouvelle liste
+            'graph_data': graph_data,  # Passer l'image du graphique
         })
 
     return render(request, 'blog/statistic.html', {'canva': canva})

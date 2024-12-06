@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Canva, Pixel, UserAction
+from .models import Canva, Pixel, PixelModification, UserAction
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -11,6 +11,9 @@ from datetime import timedelta
 from django.db.models import Sum
 from django.contrib.auth.models import User
 from django.db.models import Sum
+from django.db.models.functions import TruncDate
+from django.db.models.functions import TruncDate
+from django.db.models import Count
 
 def home(request):
     canvases = Canva.objects.annotate(
@@ -69,6 +72,7 @@ def update_pixel(request, pk):
                 pixel = get_object_or_404(Pixel, canva=canva, x=x, y=y)
                 pixel.color = color
                 pixel.save()
+                PixelModification.objects.create(pixel=pixel)
 
                 canva.save()
                 user_action.last_modified = now()
@@ -145,18 +149,49 @@ def statistic(request):
     canva_id = request.GET.get('canva_id')
     canva = get_object_or_404(Canva, id=canva_id) if canva_id else None
 
-    # Si un canvas est sélectionné, on récupère les utilisateurs et leur nombre de modifications
+
     if canva:
         user_rankings = UserAction.objects.filter(canva=canva) \
-            .values('user__username', 'user__id') \
-            .annotate(modification_count=Sum('modification_count')) \
-            .order_by('-modification_count')
+        .values('user__username', 'user__id') \
+        .annotate(modification_count=Sum('modification_count')) \
+        .order_by('-modification_count')
 
-        return render(request, 'blog/statistic.html', {'canva': canva, 'user_rankings': user_rankings})
+
+        total_modifications = UserAction.objects.filter(canva=canva).aggregate(total=Sum('modification_count'))['total'] or 0
+
+        # Date de création du Canva jusqu'à aujourd'hui
+        start_date = canva.date_posted.date()  # Date de création du canva
+        end_date = now().date()  # Date actuelle
+
+        # Liste de toutes les dates entre la date de création et la date actuelle
+        date_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+
+        # Regrouper les modifications par date
+        pixel_modifications_by_date = PixelModification.objects.filter(pixel__canva=canva) \
+            .annotate(date=TruncDate('modified_at')) \
+            .values('date') \
+            .annotate(total_modifications=Count('id')) \
+            .order_by('date')
+
+        # Transformer la liste de modifications par date en un dictionnaire
+        modification_dict = {mod['date']: mod['total_modifications'] for mod in pixel_modifications_by_date}
+
+        # Construire une liste des modifications, en ajoutant 0 pour les dates sans modifications
+        pixel_modifications_with_all_dates = []
+        for date in date_range:
+            pixel_modifications_with_all_dates.append({
+                'date': date,
+                'total_modifications': modification_dict.get(date, 0)  # 0 si aucune modification
+            })
+
+        return render(request, 'blog/statistic.html', {
+            'canva': canva,
+            'user_rankings': user_rankings,
+            'total_modifications': total_modifications,
+            'pixel_modifications_by_date': pixel_modifications_with_all_dates,  # Utiliser la nouvelle liste
+        })
 
     return render(request, 'blog/statistic.html', {'canva': canva})
-
-
 
 def user_profile(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -171,3 +206,7 @@ def user_profile(request, user_id):
         'profile_user': user,
         'canvas_participation': canvas_participation,
     })
+
+
+
+

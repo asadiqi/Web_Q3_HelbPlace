@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
-
+from django.utils.timezone import now
 
 class Canva(models.Model):
     title = models.CharField(max_length=100)
@@ -45,3 +45,11 @@ class UserAction(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.canva.title}'
+
+
+class PixelModification(models.Model):
+    pixel = models.ForeignKey(Pixel, on_delete=models.CASCADE, related_name="modifications")
+    modified_at = models.DateTimeField(default=now)
+
+    class Meta:
+        ordering = ['-modified_at']

@@ -4,127 +4,56 @@
 <div class="container">
     <h2 class="mb-4 text-center">{{ canva.title }}</h2>
 
-    <div class="text-center mb-4">
-        <img class="rounded-circle" src="{{ canva.author.profile.image.url }}" alt="{{ canva.author }}" style="width: 100px; height: 100px;">
-        <p class="mt-2 text-muted">Posted by <strong>{{ canva.author }}</strong> on {{ canva.date_posted|date:"F d, Y" }}</p>
-    </div>
+    <form method="POST" action="{% url 'update-canva' canva.id %}" id="update-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" class="form-control" value="{{ canva.title }}" required>
+        </div>
+        <div class="form-group">
+            <label for="timer">Timer (seconds):</label>
+            <input type="number" id="timer" name="timer" class="form-control" value="{{ canva.timer }}" required>
+        </div>
 
-    <div class="statistic-button">
-        <a href="{% url 'blog-statistic' %}?canva_id={{ canva.id }}" class="btn btn-primary">Statistics</a>
-    {% if canva.author.id == user.id %} <!-- Vérifie si l'utilisateur actuel est le créateur du canva -->
- 
-        <a href="{% url 'canva-update' pk=canva.pk %}" class="btn btn-warning">Update</a>
-        <a href="{% url 'canva-delete' pk=canva.pk %}" class="btn btn-danger">Delete</a>
-    {% endif %}
-
-    </div>
-
-    <div class="canvas-grid">
-        {% for row in pixels %}
-            <div class="pixel-row">
-                {% for pixel in row %}
-                    <div class="pixel" style="background-color: {{ pixel.color }};" data-x="{{ pixel.x }}" data-y="{{ pixel.y }}" onclick="selectPixel(event)">
-                    </div>
-                {% empty %}
-                    <p>No pixels available.</p>
-                {% endfor %}
-            </div>
-        {% endfor %}
-    </div>
-
-    <div class="modify-grid mt-5">
-        <form method="POST" action="{% url 'update-pixel' canva.id %}" id="pixel-form">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="x">Column:</label>
-                <input type="number" id="x" name="x" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="y">Row:</label>
-                <input type="number" id="y" name="y" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="color">Color (Hex):</label>
-                <input type="color" id="color" name="color" class="form-control" required>
-            </div>
-
-            {% if time_remaining > 0 %}
-                <div id="countdown-timer">
-                    <p>Please wait <span id="timer">{{ time_remaining }}</span> seconds before modifying again.</p>
+        <div class="canvas-grid">
+            {% for row in pixels %}
+                <div class="pixel-row">
+                    {% for pixel in row %}
+                        <div class="pixel" style="background-color: {{ pixel.color }};" 
+                             data-x="{{ pixel.x }}" 
+                             data-y="{{ pixel.y }}" 
+                             onclick="selectPixel(event)">
+                        </div>
+                    {% empty %}
+                        <p>No pixels available.</p>
+                    {% endfor %}
                 </div>
-            {% else %}
-                <p>You can now modify this canva</p>
-            {% endif %}
-            <button type="submit" class="btn btn-success mt-3" id="save-button">Save</button>
-        </form>
-    </div>
+            {% endfor %}
+        </div>
+
+        <input type="hidden" name="pixel_data" id="pixel-data">
+        <button type="submit" class="btn btn-primary mt-3">Update</button>
+    </form>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const timerElement = document.getElementById('timer');
-        const saveButton = document.querySelector('button[type="submit"]');
-        let timeRemaining = parseInt(timerElement?.textContent, 10) || 0;
-        let clickedPixel = null;
+    const pixelDataInput = document.getElementById('pixel-data');
+    const pixels = document.querySelectorAll('.pixel');
 
-        if (timeRemaining > 0) {
-            saveButton.disabled = true;
-            saveButton.classList.add('disabled');
-        }
-
-        function updateTimer() {
-            if (timeRemaining > 0) {
-                timeRemaining -= 1;
-                timerElement.textContent = timeRemaining;
-
-                if (timeRemaining === 0) {
-                    saveButton.disabled = false;
-                    saveButton.classList.remove('disabled');
-                }
-            }
-        }
-
-        setInterval(updateTimer, 1000);
-
-        const pixels = document.querySelectorAll('.pixel');
-
-        pixels.forEach(pixel => {
-            pixel.addEventListener('click', function () {
-                if (clickedPixel) {
-                    return;
-                }
-
-                const x = this.dataset.x;
-                const y = this.dataset.y;
-
-                document.getElementById('x').value = x;
-                document.getElementById('y').value = y;
-
-                pixels.forEach(p => {
-                    if (p !== this) {
-                        p.style.pointerEvents = 'none';
-                    }
-                });
-
-                clickedPixel = this;
-
-                const colorInput = document.getElementById('color');
-                this.style.backgroundColor = colorInput.value;
-            });
-        });
-
-        document.getElementById('modify-pixel-form').addEventListener('submit', function (e) {
-            if (!clickedPixel) {
-                e.preventDefault();
-                alert('Please select a pixel to modify.');
-            } else {
-                pixels.forEach(p => {
-                    p.style.pointerEvents = 'auto';
-                });
-                clickedPixel = null;
+    pixels.forEach(pixel => {
+        pixel.addEventListener('click', () => {
+            const x = pixel.dataset.x;
+            const y = pixel.dataset.y;
+            const color = prompt("Enter a color (Hex):", pixel.style.backgroundColor);
+            if (color) {
+                pixel.style.backgroundColor = color;
+                // Collect pixel data
+                const pixelData = JSON.parse(pixelDataInput.value || '[]');
+                pixelData.push({x: parseInt(x), y: parseInt(y), color: color});
+                pixelDataInput.value = JSON.stringify(pixelData);
             }
         });
     });
 </script>
-
 {% endblock %}
+

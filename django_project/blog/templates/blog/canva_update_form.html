@@ -1,0 +1,23 @@
+{% extends "blog/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Update Canva</h2>
+    <form method="POST" id="update-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="hidden" id="pixel-data" name="pixel_data" value="[]">
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+</div>
+
+<script>
+    // Récupérer les données existantes et les convertir en JSON pour les envoyer dans pixel_data
+    const pixels = [...document.querySelectorAll('.pixel')].map(pixel => ({
+        x: pixel.dataset.x,
+        y: pixel.dataset.y,
+        color: pixel.style.backgroundColor || "#FFFFFF"
+    }));
+    document.getElementById('pixel-data').value = JSON.stringify(pixels);
+</script>
+{% endblock %}

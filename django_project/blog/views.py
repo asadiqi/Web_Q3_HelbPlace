@@ -15,6 +15,7 @@ from django.contrib.auth.models import User
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
+from django.http import JsonResponse
 
 
 # Home view
@@ -138,12 +139,29 @@ class CanvaCreateView(LoginRequiredMixin, CreateView):
 class CanvaUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Canva
     fields = ['title', 'sizeHeight', 'sizeWidth', 'timer']
+    template_name = 'blog/canva_update_form.html'  # Nouveau template si nécessaire
 
     def form_valid(self, form):
+        # Associer l'auteur pour s'assurer que ce champ reste correct
         form.instance.author = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+
+        # Récupérer et mettre à jour les pixels existants
+        pixel_data = self.request.POST.get('pixel_data')
+        if pixel_data:
+            pixel_data = json.loads(pixel_data)
+            for pixel in pixel_data:
+                Pixel.objects.update_or_create(
+                    canva=self.object,
+                    x=pixel['x'],
+                    y=pixel['y'],
+                    defaults={'color': pixel['color']}
+                )
+
+        return response
 
     def test_func(self):
+        # Autoriser seulement le créateur à modifier le Canva
         return self.request.user == self.get_object().author
 
 

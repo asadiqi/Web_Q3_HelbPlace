@@ -172,7 +172,6 @@ def canva_detail(request, canva_id):
 
 
 
-
 # Statistics view
 def statistic(request):
     canva_id = request.GET.get('canva_id')
@@ -216,7 +215,8 @@ def statistic(request):
             })
 
         # Generate the plot
-        dates = [mod['date'] for mod in pixel_modifications_with_all_dates]
+            # Generate the plot
+        dates = [mod['date'].strftime('%Y-%m-%d') for mod in pixel_modifications_with_all_dates]  # Format dates
         modifications = [mod['total_modifications'] for mod in pixel_modifications_with_all_dates]
 
         plt.figure(figsize=(10, 6))
@@ -225,11 +225,8 @@ def statistic(request):
         plt.xlabel('Date')
         plt.ylabel('Total Modifications')
 
-        # Ensure only today's date is shown on the x-axis if it's the only date
-        if len(dates) == 1:
-            plt.xticks(dates, rotation=45)  # Show only today's date
-        else:
-            plt.xticks(rotation=45)
+        # Format the x-axis for better readability
+        plt.xticks(rotation=45)
 
         plt.tight_layout()
 
@@ -239,6 +236,7 @@ def statistic(request):
         buf.seek(0)
         graph_data = base64.b64encode(buf.read()).decode('utf-8')
         buf.close()
+
 
         return render(request, 'blog/statistic.html', {
             'canva': canva,

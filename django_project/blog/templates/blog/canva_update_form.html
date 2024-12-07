@@ -1,30 +1,37 @@
+{% extends "blog/base.html" %}
+
 {% block content %}
 <div class="container">
-    <h2>Update Canva</h2>
-    
+    <h2 class="mb-4 text-center">Update Canva</h2>
+
     <!-- Détails du Canva -->
-    <div class="canva-details">
-        <h3>{{ canva.title }}</h3>
-        <p>Created by: <strong>{{ created_by }}</strong></p>
-        <p>Date posted: {{ date_posted|date:"F d, Y" }}</p>
-        <img class="rounded-circle" src="{{ creator_profile.image.url }}" alt="{{ created_by }}" style="width: 100px; height: 100px;">
+    <div class="canva-details mb-4">
+        <h3 class="text-center">{{ canva.title }}</h3>
+        
+    <div class="text-center mb-4">
+        <img class="rounded-circle" src="{{ canva.author.profile.image.url }}" alt="{{ canva.author }}" style="width: 100px; height: 100px;">
+        <p class="mt-2 text-muted">Posted by <strong>{{ canva.author }}</strong> on {{ canva.date_posted|date:"F d, Y" }}</p>
+        <form method="POST" id="update-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="hidden" id="pixel-data" name="pixel_data" value="[]">
+            <button type="submit" class="btn btn-primary">Update</button>
+        </form>
     </div>
-    
+    </div>    
     <!-- Formulaire de mise à jour -->
-    <form method="POST" id="update-form">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="hidden" id="pixel-data" name="pixel_data" value="[]">
-        <button type="submit" class="btn btn-primary">Update</button>
-    </form>
+    
 </div>
 
 <script>
-    const pixels = [...document.querySelectorAll('.pixel')].map(pixel => ({
-        x: pixel.dataset.x,
-        y: pixel.dataset.y,
-        color: pixel.style.backgroundColor || "#FFFFFF"
-    }));
-    document.getElementById('pixel-data').value = JSON.stringify(pixels);
+    document.addEventListener('DOMContentLoaded', function () {
+        const pixels = [...document.querySelectorAll('.pixel')].map(pixel => ({
+            x: pixel.dataset.x,
+            y: pixel.dataset.y,
+            color: pixel.style.backgroundColor || "#FFFFFF"
+        }));
+        document.getElementById('pixel-data').value = JSON.stringify(pixels);
+    });
 </script>
+
 {% endblock %}

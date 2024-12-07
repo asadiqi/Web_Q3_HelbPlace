@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+import matplotlib
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -127,6 +129,8 @@ MEDIA_ROOT =  os.path.join(BASE_DIR ,'media') # this is the directory where medi
 MEDIA_URL = '/media/' # this is the URL where media files will be accessible from the frontend
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000  # For huge creation of canva
 
+# settings.py
+matplotlib.use('Agg')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

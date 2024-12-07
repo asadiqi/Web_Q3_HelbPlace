@@ -24,7 +24,10 @@ class Canva(models.Model):
 
     def get_absolute_url(self):
         return reverse('canva-detail', kwargs={'pk': self.pk})
-
+    
+    def delete(self, *args, **kwargs):
+        self.pixels.all().delete()  # Delete associated pixels
+        super().delete(*args, **kwargs)
 
 class Pixel(models.Model):
     canva = models.ForeignKey(Canva, on_delete=models.CASCADE, related_name='pixels')

@@ -1,3 +1,4 @@
+from tkinter import Canvas
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
@@ -153,6 +154,23 @@ class CanvaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         return self.request.user == self.get_object().author
+
+def canva_detail(request, canva_id):
+    canva = get_object_or_404(Canvas, id=canva_id)
+    user = request.user
+
+    # Vérifie si l'utilisateur actuel est le créateur du canva
+    is_creator = canva.author.id == user.id
+
+    context = {
+        'canva': canva,
+        'is_creator': is_creator,
+        # Autres contextes...
+    }
+    
+    return render(request, 'canva/canva_detail.html', context)
+
+
 
 
 # Statistics view

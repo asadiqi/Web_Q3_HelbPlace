@@ -139,14 +139,12 @@ class CanvaCreateView(LoginRequiredMixin, CreateView):
 class CanvaUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Canva
     fields = ['title', 'sizeHeight', 'sizeWidth', 'timer']
-    template_name = 'blog/canva_update_form.html'  # Nouveau template si nécessaire
+    template_name = 'blog/canva_update_form.html'
 
     def form_valid(self, form):
-        # Associer l'auteur pour s'assurer que ce champ reste correct
         form.instance.author = self.request.user
         response = super().form_valid(form)
 
-        # Récupérer et mettre à jour les pixels existants
         pixel_data = self.request.POST.get('pixel_data')
         if pixel_data:
             pixel_data = json.loads(pixel_data)
@@ -157,12 +155,19 @@ class CanvaUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
                     y=pixel['y'],
                     defaults={'color': pixel['color']}
                 )
-
         return response
 
     def test_func(self):
-        # Autoriser seulement le créateur à modifier le Canva
         return self.request.user == self.get_object().author
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        canva = self.object
+        context['pixels'] = canva.pixels.all()
+        context['creator_profile'] = canva.author.profile
+        context['created_by'] = canva.author.username
+        context['date_posted'] = canva.date_posted
+        return context
 
 
 # Canva delete view

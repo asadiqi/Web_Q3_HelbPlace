@@ -1,8 +1,16 @@
-{% extends "blog/base.html" %}
-
 {% block content %}
 <div class="container">
     <h2>Update Canva</h2>
+    
+    <!-- Détails du Canva -->
+    <div class="canva-details">
+        <h3>{{ canva.title }}</h3>
+        <p>Created by: <strong>{{ created_by }}</strong></p>
+        <p>Date posted: {{ date_posted|date:"F d, Y" }}</p>
+        <img class="rounded-circle" src="{{ creator_profile.image.url }}" alt="{{ created_by }}" style="width: 100px; height: 100px;">
+    </div>
+    
+    <!-- Formulaire de mise à jour -->
     <form method="POST" id="update-form">
         {% csrf_token %}
         {{ form.as_p }}
@@ -12,7 +20,6 @@
 </div>
 
 <script>
-    // Récupérer les données existantes et les convertir en JSON pour les envoyer dans pixel_data
     const pixels = [...document.querySelectorAll('.pixel')].map(pixel => ({
         x: pixel.dataset.x,
         y: pixel.dataset.y,

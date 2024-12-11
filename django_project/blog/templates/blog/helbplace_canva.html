@@ -1,0 +1,32 @@
+{% extends "blog/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">HELBPlace Canva</h1>
+    <p class="text-center">Bienvenue sur la page de HELBPlace Canva.</p>
+</div>
+
+<div class="container">
+    <h2 class="mb-4 text-center">{{ canva.title }}</h2>
+
+    <!-- Intégration du site collaboratif dans un iframe -->
+    <div class="iframe-container">
+        <iframe src="https://helbplace2425.alwaysdata.net/" width="100%" height="600px" frameborder="0"></iframe>
+    </div>
+</div>
+
+<style>
+    .iframe-container {
+        width: 100%;
+        height: 600px;
+        overflow: hidden;
+        margin-top: 20px;
+    }
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+</style>
+{% endblock %}

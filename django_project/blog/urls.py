@@ -21,5 +21,6 @@ urlpatterns = [
     path('canva/<int:pk>/delete/', CanvaDeleteView.as_view(), name='canva-delete'),
     path('statistic/', views.statistic, name='blog-statistic'),
     path('canva/<int:pk>/update-pixel/', views.update_pixel, name='update-pixel'),
-    
+    path('helbplace/canva/', views.helbplace_canva, name='helbplace_canva'),
+
 ]

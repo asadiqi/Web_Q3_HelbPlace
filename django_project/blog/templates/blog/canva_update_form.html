@@ -1,37 +1,41 @@
 {% extends "blog/base.html" %}
 
 {% block content %}
-<div class="container">
-    <h2 class="mb-4 text-center">Update Canva</h2>
-
-    <!-- Détails du Canva -->
-    <div class="canva-details mb-4">
-        <h3 class="text-center">{{ canva.title }}</h3>
-        
-    <div class="text-center mb-4">
-        <img class="rounded-circle" src="{{ canva.author.profile.image.url }}" alt="{{ canva.author }}" style="width: 100px; height: 100px;">
-        <p class="mt-2 text-muted">Posted by <strong>{{ canva.author }}</strong> on {{ canva.date_posted|date:"F d, Y" }}</p>
-        <form method="POST" id="update-form">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <input type="hidden" id="pixel-data" name="pixel_data" value="[]">
-            <button type="submit" class="btn btn-primary">Update</button>
-        </form>
-    </div>
-    </div>    
-    <!-- Formulaire de mise à jour -->
-    
+<div class="container mt-5">
+    <h1 class="text-center">HELBPlace Canva</h1>
+    <p class="text-center">Bienvenue sur la page de HELBPlace Canva.</p>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const pixels = [...document.querySelectorAll('.pixel')].map(pixel => ({
-            x: pixel.dataset.x,
-            y: pixel.dataset.y,
-            color: pixel.style.backgroundColor || "#FFFFFF"
-        }));
-        document.getElementById('pixel-data').value = JSON.stringify(pixels);
-    });
-</script>
+<div class="container">
+    <h2 class="mb-4 text-center">{{ canva.title }}</h2>
 
+    <div class="canvas-grid">
+        {% for row in pixel_data %}
+            <div class="pixel-row">
+                {% for pixel in row %}
+                    <div class="pixel" style="background-color: {{ pixel.color }};"></div>
+                {% empty %}
+                    <p>No pixels available.</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .canvas-grid {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .pixel-row {
+        display: flex;
+    }
+
+    .pixel {
+        width: 20px;
+        height: 20px;
+        border: 1px solid #ccc;
+    }
+</style>
 {% endblock %}

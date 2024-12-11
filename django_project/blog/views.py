@@ -2,6 +2,7 @@ from tkinter import Canvas
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+import requests
 from .models import Canva, Pixel, PixelModification, UserAction
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -286,3 +287,12 @@ def user_profile(request, user_id):
         'profile_user': user,
         'canvas_participation': canvas_participation,
     })
+
+
+# views.py
+from django.shortcuts import render
+
+def helbplace_canva(request):
+    # Récupération des données nécessaires, si besoin
+    # canva = Canva.objects.get(id=pk)
+    return render(request, 'blog/helbplace_canva.html')

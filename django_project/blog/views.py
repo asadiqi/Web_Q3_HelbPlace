@@ -288,11 +288,9 @@ def user_profile(request, user_id):
         'canvas_participation': canvas_participation,
     })
 
-
-# views.py
-from django.shortcuts import render
-
+@login_required
 def helbplace_canva(request):
     # Récupération des données nécessaires, si besoin
     # canva = Canva.objects.get(id=pk)
     return render(request, 'blog/helbplace_canva.html')
+

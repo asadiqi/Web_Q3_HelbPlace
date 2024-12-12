@@ -13,6 +13,21 @@
     <div class="iframe-container">
         <iframe src="https://helbplace2425.alwaysdata.net/" width="100%" height="600px" frameborder="0"></iframe>
     </div>
+
+    <!-- Formulaire pour modifier les pixels -->
+    <form id="pixel-form" method="POST">
+        {% csrf_token %}
+        <label for="x">X:</label>
+        <input type="number" id="x" name="x" required>
+        <label for="y">Y:</label>
+        <input type="number" id="y" name="y" required>
+        <label for="color">Couleur:</label>
+        <input type="color" id="color" name="color" required>
+        <button type="submit">Modifier le pixel</button>
+    </form>
+
+    <!-- Affichage du compte à rebours -->
+    <p id="countdown"></p>
 </div>
 
 <style>
@@ -29,4 +44,62 @@
         border: none;
     }
 </style>
+
+<script>
+    let lastModificationTime = 0;
+
+    document.getElementById('pixel-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const currentTime = Date.now();
+        const timeSinceLastModification = currentTime - lastModificationTime;
+
+        if (timeSinceLastModification < 11000) { // 11 secondes en millisecondes
+            alert('Veuillez attendre 11 secondes avant de modifier un autre pixel.');
+            return;
+        }
+
+        const x = document.getElementById('x').value;
+        const y = document.getElementById('y').value;
+        const color = document.getElementById('color').value.substring(1); // Remove the '#' from the color value
+
+        const username = 'samir';
+        const password = 'a5Vk6se1Aa6I';
+
+        const url = `https://helbplace2425.alwaysdata.net/writer.php?username=${username}&password=${password}&row=${y}&col=${x}&hexvalue=${color}`;
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur de réseau');
+                }
+                return response.text();
+            })
+            .then(data => {
+                console.log('Réponse du serveur:', data);
+                alert('Pixel modifié avec succès!');
+                document.querySelector('iframe').src += '';
+                lastModificationTime = Date.now(); // Mettre à jour le temps de la dernière modification
+                startCountdown(11); // Démarrer le compte à rebours
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                // Suppression des alertes d'erreur
+            });
+    });
+
+    function startCountdown(seconds) {
+        const countdownElement = document.getElementById('countdown');
+        let remainingTime = seconds;
+
+        const interval = setInterval(() => {
+            countdownElement.textContent = `Veuillez attendre ${remainingTime} secondes avant de modifier un autre pixel.`;
+            remainingTime--;
+
+            if (remainingTime < 0) {
+                clearInterval(interval);
+                countdownElement.textContent = '';
+            }
+        }, 1000);
+    }
+</script>
 {% endblock %}

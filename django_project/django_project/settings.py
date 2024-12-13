@@ -27,8 +27,8 @@ SECRET_KEY = 'django-insecure-k@mkz)e8%9=%p!-q%l8)*(hsps*u)vuk(oc=d3a9@-%^7kq(8(
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # Pour permettre l'accès à tous les hôtes pendant le débogage
+INTERNAL_IPS = ['127.0.0.1']  # Pour accéder à la page de débogage via le serveur local
 
 
 # Application definition

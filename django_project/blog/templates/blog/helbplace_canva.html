@@ -98,7 +98,7 @@
         document.getElementById('pixel-form').addEventListener('submit', function(event) {
             event.preventDefault();
             saveButton.disabled = true;
-            const countdownDuration = 11; // 11 secondes
+            const countdownDuration = 11; // 11 seconds
             const endTime = Date.now() + countdownDuration * 1000;
             localStorage.setItem('countdownEndTime', endTime);
             startCountdown(countdownDuration, countdownElement, saveButton);
@@ -115,28 +115,28 @@
             fetch(url)
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Erreur de réseau');
+                        throw new Error('Network error');
                     }
                     return response.text();
                 })
                 .then(data => {
-                    console.log('Réponse du serveur:', data);
-                    alert('Pixel modifié avec succès!');
+                    console.log('Server response:', data);
+                    alert('Pixel modified successfully!');
                     document.querySelector('iframe').src += ''; // Refresh iframe to reflect changes
                 })
                 .catch(error => {
-                    console.error('Erreur:', error);
+                    console.error('Error:', error);
                 });
         });
     });
 
     function startCountdown(seconds, countdownElement, saveButton) {
         let remainingTime = seconds;
-        countdownElement.textContent = `Veuillez attendre ${remainingTime} secondes.`;
+        countdownElement.textContent = `Please wait ${remainingTime} seconds.`;
 
         const countdownInterval = setInterval(() => {
             remainingTime--;
-            countdownElement.textContent = `Veuillez attendre ${remainingTime} secondes.`;
+            countdownElement.textContent = `Please wait ${remainingTime} seconds.`;
 
             if (remainingTime <= 0) {
                 clearInterval(countdownInterval);

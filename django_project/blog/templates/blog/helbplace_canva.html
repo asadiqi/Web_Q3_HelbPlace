@@ -15,19 +15,29 @@
     </div>
 
     <!-- Formulaire pour modifier les pixels -->
-    <form id="pixel-form" method="POST">
-        {% csrf_token %}
-        <label for="x">X:</label>
-        <input type="number" id="x" name="x" required>
-        <label for="y">Y:</label>
-        <input type="number" id="y" name="y" required>
-        <label for="color">Couleur:</label>
-        <input type="color" id="color" name="color" required>
-        <button type="submit">Modifier le pixel</button>
-    </form>
+    <div class="modify-grid mt-5">
+        <form id="pixel-form" method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="x">Column:</label>
+                <input type="number" id="x" name="x" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="y">Row:</label>
+                <input type="number" id="y" name="y" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="color">Color (Hex):</label>
+                <input type="color" id="color" name="color" class="form-control" required>
+            </div>
 
-    <!-- Affichage du compte à rebours -->
-    <p id="countdown"></p>
+            <div id="countdown-timer" class="mt-3">
+                <p id="countdown" class="text-danger"></p>
+            </div>
+
+            <button type="submit" class="btn btn-success mt-3">Save</button>
+        </form>
+    </div>
 </div>
 
 <style>
@@ -36,12 +46,37 @@
         height: 600px;
         overflow: hidden;
         margin-top: 20px;
+        border: 2px solid #000;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
-    iframe {
+    #pixel-form {
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        font-weight: bold;
+    }
+
+    .form-control {
         width: 100%;
-        height: 100%;
-        border: none;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .btn {
+        width: 100%;
     }
 </style>
 
@@ -83,7 +118,6 @@
             })
             .catch(error => {
                 console.error('Erreur:', error);
-                // Suppression des alertes d'erreur
             });
     });
 

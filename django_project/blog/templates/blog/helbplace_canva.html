@@ -79,43 +79,55 @@
         width: 100%;
     }
 </style>
-
 <script>
-    let lastModificationTime = 0;
-
-    document.getElementById('pixel-form').addEventListener('submit', function(event) {
-        event.preventDefault();
-        const saveButton = event.target.querySelector('button[type="submit"]');
+    document.addEventListener('DOMContentLoaded', function() {
+        const saveButton = document.querySelector('button[type="submit"]');
         const countdownElement = document.getElementById('countdown');
-        
-        saveButton.disabled = true; // Désactiver le bouton "Save"
-        startCountdown(11, countdownElement, saveButton); // Démarrer le compte à rebours
+        const endTime = localStorage.getItem('countdownEndTime');
 
-        const x = document.getElementById('x').value;
-        const y = document.getElementById('y').value;
-        const color = document.getElementById('color').value.substring(1); // Remove the '#' from the color value
+        if (endTime) {
+            const remainingTime = Math.floor((endTime - Date.now()) / 1000);
+            if (remainingTime > 0) {
+                saveButton.disabled = true;
+                startCountdown(remainingTime, countdownElement, saveButton);
+            } else {
+                localStorage.removeItem('countdownEndTime');
+            }
+        }
 
-        const username = 'samir';
-        const password = 'a5Vk6se1Aa6I';
+        document.getElementById('pixel-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            saveButton.disabled = true;
+            const countdownDuration = 11; // 11 secondes
+            const endTime = Date.now() + countdownDuration * 1000;
+            localStorage.setItem('countdownEndTime', endTime);
+            startCountdown(countdownDuration, countdownElement, saveButton);
 
-        const url = `https://helbplace2425.alwaysdata.net/writer.php?username=${username}&password=${password}&row=${y}&col=${x}&hexvalue=${color}`;
+            const x = document.getElementById('x').value;
+            const y = document.getElementById('y').value;
+            const color = document.getElementById('color').value.substring(1); // Remove the '#' from the color value
 
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erreur de réseau');
-                }
-                return response.text();
-            })
-            .then(data => {
-                console.log('Réponse du serveur:', data);
-                alert('Pixel modifié avec succès!');
-                document.querySelector('iframe').src += ''; // Refresh iframe to reflect changes
-                lastModificationTime = Date.now(); // Mettre à jour le temps de la dernière modification
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-            });
+            const username = 'samir';
+            const password = 'a5Vk6se1Aa6I';
+
+            const url = `https://helbplace2425.alwaysdata.net/writer.php?username=${username}&password=${password}&row=${y}&col=${x}&hexvalue=${color}`;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur de réseau');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    console.log('Réponse du serveur:', data);
+                    alert('Pixel modifié avec succès!');
+                    document.querySelector('iframe').src += ''; // Refresh iframe to reflect changes
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                });
+        });
     });
 
     function startCountdown(seconds, countdownElement, saveButton) {
@@ -129,7 +141,8 @@
             if (remainingTime <= 0) {
                 clearInterval(countdownInterval);
                 countdownElement.textContent = '';
-                saveButton.disabled = false; // Réactiver le bouton "Save"
+                saveButton.disabled = false;
+                localStorage.removeItem('countdownEndTime');
             }
         }, 1000);
     }

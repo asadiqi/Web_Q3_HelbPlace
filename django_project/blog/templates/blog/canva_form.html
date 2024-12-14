@@ -1,4 +1,5 @@
 {% extends "blog/base.html" %}
+
 {% load crispy_forms_tags %}
 
 {% block content %}
@@ -47,6 +48,8 @@
             const rows = parseInt(sizeHeightInput.value, 10) || 1;
             const cols = parseInt(sizeWidthInput.value, 10) || 1;
 
+            const fragment = document.createDocumentFragment();
+
             for (let y = 0; y < rows; y++) {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'pixel-row';
@@ -63,8 +66,10 @@
                     rowDiv.appendChild(input);
                 }
 
-                gridContainer.appendChild(rowDiv);
+                fragment.appendChild(rowDiv);
             }
+
+            gridContainer.appendChild(fragment);
         }
 
         createGrid();
@@ -98,6 +103,9 @@
         display: flex;
         flex-direction: column;
         margin-top: 20px;
+        max-height: 400px; /* Limite la hauteur maximale */
+        max-width: 100%; /* Limite la largeur maximale */
+        overflow: auto; /* Ajoute des barres de défilement si nécessaire */
     }
     .pixel-row {
         display: flex;

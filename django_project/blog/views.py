@@ -1,7 +1,7 @@
 from tkinter import Canvas
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, DeleteView
 import requests
 from .models import Canva, Pixel, PixelModification, UserAction
 from django.http import HttpResponseRedirect
@@ -135,40 +135,6 @@ class CanvaCreateView(LoginRequiredMixin, CreateView):
 
         return response
 
-
-# Canva update view
-class CanvaUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Canva
-    fields = ['title', 'sizeHeight', 'sizeWidth', 'timer']
-    template_name = 'blog/canva_update_form.html'
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        response = super().form_valid(form)
-
-        pixel_data = self.request.POST.get('pixel_data')
-        if pixel_data:
-            pixel_data = json.loads(pixel_data)
-            for pixel in pixel_data:
-                Pixel.objects.update_or_create(
-                    canva=self.object,
-                    x=pixel['x'],
-                    y=pixel['y'],
-                    defaults={'color': pixel['color']}
-                )
-        return response
-
-    def test_func(self):
-        return self.request.user == self.get_object().author
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        canva = self.object
-        context['pixels'] = canva.pixels.all()
-        context['creator_profile'] = canva.author.profile
-        context['created_by'] = canva.author.username
-        context['date_posted'] = canva.date_posted
-        return context
 
 
 # Canva delete view

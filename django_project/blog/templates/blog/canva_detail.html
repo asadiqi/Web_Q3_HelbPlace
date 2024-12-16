@@ -12,8 +12,6 @@
     <div class="statistic-button">
         <a href="{% url 'blog-statistic' %}?canva_id={{ canva.id }}" class="btn btn-primary">Statistics</a>
     {% if canva.author.id == user.id %} <!-- Vérifie si l'utilisateur actuel est le créateur du canva -->
- 
-    <a href="{% url 'canva-update' pk=canva.pk %}" class="btn btn-warning">Update</a>
     <a href="{% url 'canva-delete' pk=canva.pk %}" class="btn btn-danger">Delete</a>
     {% endif %}
 

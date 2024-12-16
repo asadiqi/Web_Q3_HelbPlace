@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 from django.http import JsonResponse
+from django.conf import settings
 
 
 # Home view
@@ -168,10 +169,11 @@ def statistic(request):
     canva = get_object_or_404(Canva, id=canva_id) if canva_id else None
 
     if canva:
+        max_users = getattr(settings, 'MAX_RANKING_USERS',5)
         user_rankings = UserAction.objects.filter(canva=canva) \
             .values('user__username', 'user__id') \
             .annotate(modification_count=Sum('modification_count')) \
-            .order_by('-modification_count')
+            .order_by('-modification_count')[:max_users]
 
         total_modifications = UserAction.objects.filter(canva=canva).aggregate(total=Sum('modification_count'))['total'] or 0
 
